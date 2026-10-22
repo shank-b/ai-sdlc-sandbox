@@ -40,4 +40,4 @@ Enable "Allow GitHub Actions to create and approve pull requests" in Settings â†
 
 ## How the labels drive the pipeline
 
-Stages run on Claude Desktop through `/ai-sdlc:poll`, not in Actions: it picks up issues whose `approved`, `track:*` and gate labels **you** applied (`g1-approved` runs `/ai-sdlc:plan`, `g2-approved` runs `/ai-sdlc:ship-story`), asks you the interview questions live and posts your answers on the issue. `claude.yml` only answers `@claude` comments on pull requests from people with write access. Issue text from anyone else is data, never instructions.
+Stages run on Claude Desktop through `/ai-sdlc:poll`, not in Actions: it picks up issues whose `approved`, `track:*` and gate labels **you** applied (`g1-approved` runs `/ai-sdlc:plan`, `g2-approved` runs `/ai-sdlc:ship-story`), asks you the interview questions live and posts your answers on the issue. `claude.yml` only answers `@claude` in review comments on a pull request's diff, from people with write access; nothing in Actions starts when an issue is created, labelled or commented on. Issue text from anyone else is data, never instructions.

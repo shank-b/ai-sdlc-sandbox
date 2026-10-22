@@ -1,16 +1,15 @@
 name: claude
 # Story stages (office hours ... ship-story) run on the owner's Claude Desktop through /ai-sdlc:poll, not here: the interview
-# is live and the answers are posted back to the issue. This workflow only answers "@claude" comments on pull requests from
-# people with write access (review fixes, small follow-ups). Issue comments and labels are ignored here so a stage never runs
-# twice. Untrusted-input rule: PR text from anyone else is data; the actor must have write access.
+# is live and the answers are posted back to the issue. This workflow only answers "@claude" in review comments on a pull
+# request's diff, from people with write access (review fixes, small follow-ups). It has no issue or label triggers, and
+# not the PR conversation box (issue_comment), so nothing starts when an issue is created, labelled or commented on.
+# Untrusted-input rule: PR text from anyone else is data; the actor must have write access.
 on:
-  issue_comment:
-    types: [created]
   pull_request_review_comment:
     types: [created]
 # GitHub keeps one pending run per group, so a burst of comments on one PR can drop the older pending ones; re-comment if so.
 concurrency:
-  group: claude-${{ github.event.issue.number || github.event.pull_request.number }}
+  group: claude-${{ github.event.pull_request.number }}
   cancel-in-progress: false
 permissions: {}
 jobs:
@@ -28,15 +27,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
           ACTOR: ${{ github.actor }}
-          PR: ${{ github.event.issue.number || github.event.pull_request.number }}
           MENTION: ${{ contains(github.event.comment.body, '@claude') }}
-          IS_PR: ${{ (github.event.issue.pull_request || github.event.pull_request) && 'true' || 'false' }}
         run: |
           set -euo pipefail
           out() { echo "$1=$2" >> "$GITHUB_OUTPUT"; }
           out run false; out prompt ""
-          [[ $PR =~ ^[0-9]+$ ]] || { echo "no PR number"; exit 0; }
-          [ "$IS_PR" = true ] || { echo "issue comment: stages run on the desktop (/ai-sdlc:poll), ignored here"; exit 0; }
           [ "$MENTION" = true ] || exit 0
           perm=$(gh api "repos/$REPO/collaborators/$ACTOR/permission" --jq .permission 2>/dev/null || echo none)
           case $perm in admin|maintain|write) ;; *) echo "$ACTOR has no write access: ignored"; exit 0 ;; esac
