@@ -1,12 +1,12 @@
-# Always-human paths. /ai-sdlc:new-project replaces {{OWNER_HANDLE}} with your GitHub handle (for example @octocat)
+# Always-human paths. /ai-sdlc:new-project replaces @shank-b with your GitHub handle (for example @octocat)
 # and appends this project's own high-risk paths.
-**/auth/**           {{OWNER_HANDLE}}
-.github/workflows/** {{OWNER_HANDLE}}
-.github/actions/**   {{OWNER_HANDLE}}
-.github/CODEOWNERS   {{OWNER_HANDLE}}
-scripts/scan-agent-config*.sh {{OWNER_HANDLE}}
-scripts/deploy.sh    {{OWNER_HANDLE}}
-.claude/**           {{OWNER_HANDLE}}
-.mcp.json            {{OWNER_HANDLE}}
-db/migrations/**     {{OWNER_HANDLE}}
-infra/**             {{OWNER_HANDLE}}
+**/auth/**           @shank-b
+.github/workflows/** @shank-b
+.github/actions/**   @shank-b
+.github/CODEOWNERS   @shank-b
+scripts/scan-agent-config*.sh @shank-b
+scripts/deploy.sh    @shank-b
+.claude/**           @shank-b
+.mcp.json            @shank-b
+db/migrations/**     @shank-b
+infra/**             @shank-b

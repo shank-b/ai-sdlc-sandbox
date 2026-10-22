@@ -1,0 +1,18 @@
+{
+  "profile": "light",
+  "testCommand": "npm test",
+  "typecheckCommand": "npx tsc --noEmit",
+  "lintCommand": "npx eslint {file}",
+  "sourceExtensions": ["ts", "tsx", "js", "jsx"],
+  "testRequiredPaths": ["apps/**", "packages/**"],
+  "alwaysHumanPaths": [
+    "**/auth/**",
+    "db/migrations/**",
+    ".github/workflows/**",
+    ".claude/**",
+    ".mcp.json",
+    "infra/**",
+    "scripts/deploy.sh",
+    "scripts/scan-agent-config*.sh"
+  ]
+}

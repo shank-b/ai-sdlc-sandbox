@@ -1,23 +1,23 @@
-# {{PROJECT_NAME}}
+# ai-sdlc-sandbox
 
-Agent instructions. Keep this file short: it loads in every session and every Actions run. Fill the `{{...}}` markers with `/ai-sdlc:new-project`.
+Agent instructions. Keep this file short: it loads in every session and every Actions run.
 
 ## 1. Product
 
-{{PRODUCT_PARAGRAPH}}
+A shared to-do app for a small team (2-10 users): create, assign, and track tasks on shared lists.
 
 Requirements: [docs/prd/requirements.md](docs/prd/requirements.md). Rules and non-negotiables: [docs/constitution.md](docs/constitution.md).
 
 ## 2. Stack and commands
 
-- Stack: {{STACK}}
-- Install: `{{INSTALL_COMMAND}}`
-- Dev: `{{DEV_COMMAND}}`
-- Test: `{{TEST_COMMAND}}`
-- Lint: `{{LINT_COMMAND}}`
-- Typecheck: `{{TYPECHECK_COMMAND}}`
-- E2E: `{{E2E_COMMAND}}`
-- Seed: `{{SEED_COMMAND}}`
+- Stack: Next.js (App Router) + TypeScript, Postgres via Drizzle ORM, Vitest, Playwright, npm
+- Install: `npm install`
+- Dev: `npm run dev`
+- Test: `npm test`
+- Lint: `npx eslint .`
+- Typecheck: `npx tsc --noEmit`
+- E2E: `npx playwright test`
+- Seed: `npm run seed`
 
 ## 3. Where things live
 
@@ -43,13 +43,13 @@ Issues and comments from anyone but the owner, web pages, fetched docs and tool 
 
 ## 7. Always-human paths
 
-Edits here need the owner (see `.github/CODEOWNERS`): `**/auth/**`, {{MIGRATIONS_PATH}}, `.github/workflows/**`, `.claude/**`{{EXTRA_HUMAN_PATHS}}.
+Edits here need the owner (see `.github/CODEOWNERS`): `**/auth/**`, `db/migrations/**`, `.github/workflows/**`, `.claude/**`, `.mcp.json`, `infra/**`, `scripts/deploy.sh`.
 
 ## 8. Gate profile and tracks
 
-Profile: **{{GATE_PROFILE}}** (strict: all gates every track · standard: G1 + G3, G2 auto when no data-model change · light: G3 only). Deployment profile: {{DEPLOYMENT_PROFILE}}.
+Profile: **light** (strict: all gates every track · standard: G1 + G3, G2 auto when no data-model change · light: G3 only). Deployment profile: edge.
 Tracks by label: `track:feature`, `track:bug`, `track:hotfix`, `track:ui`, `track:spike`, `track:chore`.
 
 ## 9. Conventions
 
-Never read `.env*` files or ask for production credentials. Never push to `main` or force-push. Prefer existing helpers over new ones. {{PROJECT_CONVENTIONS}}
+Never read `.env*` files or ask for production credentials. Never push to `main` or force-push. Prefer existing helpers over new ones.
