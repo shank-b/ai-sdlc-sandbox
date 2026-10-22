@@ -14,4 +14,5 @@ Out of scope: formatting, naming style, anything a linter already enforces.
 
 ## Project-specific risks
 
-{{PROJECT_RISKS}}
+- Auth: any task/list endpoint must check the requesting user owns or is a member of the list before reading or writing it.
+- Multi-user data: a to-do item or list must never leak across teams/users in list/search responses.
