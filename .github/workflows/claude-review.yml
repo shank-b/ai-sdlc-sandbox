@@ -60,8 +60,13 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          plugin_marketplaces: "https://github.com/shank-b/ai-sdlc.git"
-          plugins: "ai-sdlc@ai-sdlc"
+          plugin_marketplaces: |
+            https://github.com/anthropics/claude-plugins-official.git
+            https://github.com/shank-b/ai-sdlc.git
+          plugins: |
+            superpowers@claude-plugins-official
+            frontend-design@claude-plugins-official
+            ai-sdlc@ai-sdlc
           prompt: >-
             Use the ai-sdlc:security-reviewer subagent to review pull request ${{ github.event.pull_request.number }}
             of ${{ github.repository }} (read it with the GitHub tools). Then post its findings, ranked with confidence
