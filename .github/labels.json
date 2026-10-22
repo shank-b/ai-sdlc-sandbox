@@ -1,0 +1,17 @@
+[
+  { "name": "track:feature", "color": "1d76db", "description": "New capability: office hours through release" },
+  { "name": "track:bug", "color": "d73a4a", "description": "Small change or bug: spec-lite then build" },
+  { "name": "track:hotfix", "color": "b60205", "description": "Production fix: debug, build, fast-path release" },
+  { "name": "track:ui", "color": "5319e7", "description": "UI tweak: wireframes and design review first" },
+  { "name": "track:spike", "color": "fbca04", "description": "Research: output is a doc or ADR" },
+  { "name": "track:chore", "color": "c5def5", "description": "Dependencies and tech debt" },
+  { "name": "approved", "color": "0e8a16", "description": "Owner approved agents to work on this issue" },
+  { "name": "needs-pm-approval", "color": "e99695", "description": "Waiting at a gate for the owner" },
+  { "name": "g1-approved", "color": "0e8a16", "description": "Spec and concept pack approved (G1)" },
+  { "name": "g2-approved", "color": "0e8a16", "description": "Plan approved (G2)" },
+  { "name": "in-progress", "color": "fef2c0", "description": "An agent is working; the watchdog re-triggers it if idle" },
+  { "name": "needs-human", "color": "b60205", "description": "An agent stopped and needs the owner" },
+  { "name": "blocked", "color": "000000", "description": "Waiting on something outside the pipeline" },
+  { "name": "always-human", "color": "b60205", "description": "Touches an always-human path" },
+  { "name": "security", "color": "b60205", "description": "Security-relevant change" }
+]

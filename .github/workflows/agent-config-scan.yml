@@ -1,0 +1,13 @@
+name: agent-config-scan
+# Runs on every PR (a path filter would leave the required check missing). Cheap when nothing changed.
+on:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  agent-config-scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - run: bash scripts/scan-agent-config.sh

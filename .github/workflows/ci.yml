@@ -1,0 +1,44 @@
+# Edit the steps for your stack at bootstrap (this file is an always-human path). The job name `ci` is the required status check.
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - name: Repo script tests
+        run: |
+          for t in scripts/*.test.sh; do [ -e "$t" ] || continue; bash "$t"; done
+      - name: Detect Node project
+        id: node
+        run: |
+          if [ -f package.json ]; then echo "present=true" >> "$GITHUB_OUTPUT"; else echo "No package.json yet: nothing to build or test."; fi
+      - uses: actions/setup-node@v7
+        if: steps.node.outputs.present == 'true'
+        with:
+          node-version: lts/*
+      - name: Install
+        if: steps.node.outputs.present == 'true'
+        run: if [ -f package-lock.json ]; then npm ci; else npm install; fi
+      - name: Lint, typecheck, unit and property tests
+        if: steps.node.outputs.present == 'true'
+        run: |
+          npm run --if-present lint
+          npm run --if-present typecheck
+          npm run --if-present test
+      - name: Playwright
+        if: steps.node.outputs.present == 'true'
+        run: |
+          if npm run | grep -q ' e2e'; then
+            npx playwright install --with-deps chromium
+            npm run e2e
+          fi
+      - name: Dependency audit
+        if: steps.node.outputs.present == 'true'
+        run: npm audit --audit-level=high

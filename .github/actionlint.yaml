@@ -1,0 +1,5 @@
+# actionlint's bundled metadata for anthropics/claude-code-action predates its `conclusion` output (it is in the action's action.yml).
+paths:
+  .github/workflows/**/*.yml:
+    ignore:
+      - 'property "conclusion" is not defined in object type'

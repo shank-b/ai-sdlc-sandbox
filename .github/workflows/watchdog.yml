@@ -1,0 +1,36 @@
+name: watchdog
+# Re-triggers issues labelled in-progress that went quiet, twice at most; then escalates to needs-human.
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+permissions:
+  issues: write
+  actions: write
+jobs:
+  watchdog:
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          HOURS: ${{ vars.WATCHDOG_HOURS || '3' }}
+        run: |
+          set -euo pipefail
+          [[ $HOURS =~ ^[0-9]+$ ]] || HOURS=3
+          cutoff=$(date -u -d "-${HOURS} hours" +%Y-%m-%dT%H:%M:%SZ)
+          gh issue list --repo "$REPO" --label in-progress --state open --json number,updatedAt \
+            --jq ".[] | select(.updatedAt < \"$cutoff\") | .number" | while read -r n; do
+            tries=$(gh api "repos/$REPO/issues/$n/comments" --paginate \
+              --jq '[.[] | select(.user.login == "github-actions[bot]" and (.body | contains("<!-- ai-sdlc:watchdog -->")))] | length' \
+              | awk '{s+=$1} END {print s+0}')
+            if [ "$tries" -ge 2 ]; then
+              gh issue edit "$n" --repo "$REPO" --add-label needs-human --remove-label in-progress
+              gh issue comment "$n" --repo "$REPO" --body "<!-- ai-sdlc:watchdog-escalated -->
+          Watchdog: no activity for ${HOURS}h after 2 retries. Needs a human."
+            else
+              gh issue comment "$n" --repo "$REPO" --body "<!-- ai-sdlc:watchdog -->
+          Watchdog: no activity for ${HOURS}h, re-triggering ($((tries + 1))/2)."
+              gh workflow run claude.yml --repo "$REPO" -f issue="$n"
+            fi
+          done

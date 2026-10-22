@@ -1,0 +1,106 @@
+name: deploy
+# main -> staging. Tag v* -> production, which waits for the owner's approval on the protected `production` environment
+# (gate G4); then /ai-sdlc:canary checks health and rolls back on the trigger agreed in the release PR.
+# scripts/deploy.sh does the provider-specific work; fill it in per deployment profile.
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Where to deploy
+        type: choice
+        options: [staging, production]
+        required: true
+      ref:
+        description: Git ref to deploy (a tag for production rollbacks)
+        required: true
+permissions:
+  contents: read
+# Concurrency is per job, not per workflow: the canary job runs inside the production run, and a rollback it dispatches
+# must be able to start while the canary is still watching.
+jobs:
+  staging:
+    concurrency:
+      group: deploy-staging
+      cancel-in-progress: false
+    if: >-
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_dispatch' && inputs.environment == 'staging')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+      - env:
+          REF: ${{ inputs.ref || github.sha }}
+        run: bash scripts/deploy.sh staging "$REF"
+  production:
+    if: >-
+      startsWith(github.ref, 'refs/tags/v') ||
+      (github.event_name == 'workflow_dispatch' && inputs.environment == 'production')
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    env:
+      AI_SDLC_DEPLOY: "1"
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+      # Provider tokens are `production` environment secrets and are not exported automatically: pass the ones
+      # deploy.sh needs here, for example `VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}`.
+      - env:
+          REF: ${{ inputs.ref || github.ref_name }}
+        run: bash scripts/deploy.sh production "$REF"
+  canary:
+    needs: production
+    if: vars.PRODUCTION_URL != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: canary
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      actions: write
+      id-token: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GITHUB_MCP_TOKEN: ${{ github.token }}
+      CANARY_USER: ${{ secrets.CANARY_USER }}
+      CANARY_PASSWORD: ${{ secrets.CANARY_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-plugin
+        with:
+          token: ${{ secrets.PLUGIN_REPO_TOKEN }}
+      - id: canary
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          plugin_marketplaces: "https://github.com/shank-b/ai-sdlc.git"
+          plugins: "ai-sdlc@ai-sdlc"
+          prompt: "/ai-sdlc:canary ${{ vars.PRODUCTION_URL }}"
+          claude_args: |
+            --max-turns 40
+            --mcp-config .mcp.json
+            --allowedTools "Bash,Read,Glob,Grep,Skill,mcp__github,mcp__playwright,mcp__sentry"
+      # A skipped canary must not look like a healthy release.
+      - name: Fail if the canary did not run
+        if: always() && steps.canary.outputs.conclusion != 'success'
+        run: |
+          echo "::error::The canary did not run or failed. Production was NOT verified."
+          exit 1
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: ai-sdlc-audit-canary-${{ github.run_id }}
+          path: .ai-sdlc/audit
+          retention-days: 90
+          if-no-files-found: ignore

@@ -1,0 +1,31 @@
+name: Story
+description: A feature or change to build. The owner labels it (approved + track:*) to start work.
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: User problem
+      description: Who has the problem and what happens today?
+    validations: { required: true }
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome
+      description: What should be true when this is done?
+    validations: { required: true }
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Constraints
+      description: Deadlines, platforms, data, accessibility, anything that limits the solution.
+  - type: dropdown
+    id: track
+    attributes:
+      label: Suggested track
+      description: The owner sets the real track by applying a track:* label.
+      options: [feature, ui, bug, hotfix, spike, chore]
+  - type: textarea
+    id: links
+    attributes:
+      label: Links
+      description: Related issues, designs, docs.

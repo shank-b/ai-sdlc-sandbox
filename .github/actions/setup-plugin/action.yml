@@ -1,0 +1,20 @@
+name: Set up the ai-sdlc plugin
+description: >
+  Lets the runner clone the ai-sdlc plugin repo when it is private (PLUGIN_REPO_TOKEN with read access to that one repo).
+  A no-op when the token is empty, for example when the plugin repo is public.
+inputs:
+  token:
+    description: Fine-grained token with read access to the plugin repo
+    required: false
+    default: ""
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        PLUGIN_REPO_TOKEN: ${{ inputs.token }}
+      run: |
+        if [ -n "$PLUGIN_REPO_TOKEN" ]; then
+          echo "::add-mask::$PLUGIN_REPO_TOKEN"
+          git config --global url."https://x-access-token:${PLUGIN_REPO_TOKEN}@github.com/shank-b/ai-sdlc".insteadOf "https://github.com/shank-b/ai-sdlc"
+        fi
