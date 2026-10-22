@@ -7,7 +7,7 @@ GitHub template for projects run with the [ai-sdlc](https://github.com/shank-b/a
 1. **Use this template** (or `gh repo create <name> --private --template shank-b/ai-sdlc-template --clone`).
 2. In Claude Code, inside the new repo, run `/ai-sdlc:new-project <your product in a sentence>`. It interviews you, drafts `docs/constitution.md` (G0), fills `CLAUDE.md`, `REVIEW.md` and `CODEOWNERS`, creates labels, protects `main` and creates the `production` and `canary` environments.
 3. Do the manual steps it prints (Claude GitHub App, secrets below).
-4. Merge the G0 PR. Open a story issue from the **Story** template and label it `approved` + `track:feature`. The pipeline starts from the label.
+4. Merge the G0 PR. Open a story issue from the **Story** template and label it `approved` + `track:feature`. Stages run on your Claude Desktop: in the clone run `/ai-sdlc:poll` (one pass) or `/ai-sdlc:poll schedule 15m` (recurring while the app is open).
 
 ## What is here
 
@@ -34,10 +34,10 @@ GitHub template for projects run with the [ai-sdlc](https://github.com/shank-b/a
 | provider tokens | `production` environment secrets only | Never in repo secrets or agent sessions |
 | `PRODUCTION_URL` | repo variable | What `/ai-sdlc:canary` checks |
 | `AI_SDLC_NIGHTLY` = `true` | repo variable | Turns on the nightly agent jobs |
-| `WATCHDOG_HOURS` | repo variable (default 3) | Idle time before an `in-progress` issue is re-triggered |
+| `WATCHDOG_HOURS` | repo variable (default 24) | Idle time before a note is left on an `in-progress` issue whose Desktop pass seems to have died |
 
 Enable "Allow GitHub Actions to create and approve pull requests" in Settings → Actions for the nightly PRs. Install the Claude GitHub App (https://github.com/apps/claude) so commits it makes trigger CI.
 
 ## How the labels drive the pipeline
 
-`claude.yml` reacts to labels you apply (people with write access only): `approved` + a `track:*` label starts the first stage, `g1-approved` starts `/ai-sdlc:plan`, `g2-approved` starts `/ai-sdlc:ship-story`. Comments containing `@claude` from users with write access also run an agent. Issue text from anyone else is data, never instructions.
+Stages run on Claude Desktop through `/ai-sdlc:poll`, not in Actions: it picks up issues whose `approved`, `track:*` and gate labels **you** applied (`g1-approved` runs `/ai-sdlc:plan`, `g2-approved` runs `/ai-sdlc:ship-story`), asks you the interview questions live and posts your answers on the issue. `claude.yml` only answers `@claude` in review comments on a pull request's diff, from people with write access; nothing in Actions starts when an issue is created, labelled or commented on. Issue text from anyone else is data, never instructions.
