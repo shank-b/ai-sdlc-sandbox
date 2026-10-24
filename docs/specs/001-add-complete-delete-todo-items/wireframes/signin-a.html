@@ -1,0 +1,15 @@
+<!doctype html><html lang="en-IN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sign in A</title><style>*{box-sizing:border-box}body{margin:0;font:16px/1.4 system-ui,sans-serif;color:#222;background:#eee}
+.frame{margin:16px auto;max-width:1100px}.tag{font:12px monospace;color:#666;margin:0 0 4px 4px}
+.screen{background:#fff;border:2px solid #999;padding:16px}
+h1{font-size:22px;margin:0 0 12px}h2{font-size:16px;margin:16px 0 6px;color:#555}
+input[type=text]{width:100%;padding:10px;border:2px solid #888;background:#f4f4f4;font:inherit}
+label{display:block;font-weight:600;margin-bottom:4px}
+button{padding:10px 14px;border:2px solid #666;background:#ddd;font:inherit;min-height:44px;min-width:44px}
+ul{list-style:none;padding:0;margin:0}li{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #ccc}
+li .t{flex:1}li small{display:block;color:#777}.done .t{text-decoration:line-through;color:#888}
+.err{border:2px solid #444;background:#e8e8e8;padding:8px;margin:8px 0}.empty{padding:24px;text-align:center;color:#777;border:2px dashed #aaa}
+.row{display:flex;gap:8px}.row input{flex:1}.card{border:2px solid #999;padding:10px;margin:8px 0}
+.cols{display:grid;gap:16px}@media(min-width:800px){.cols{grid-template-columns:1fr 1fr}}
+.bar{background:#fff;border-top:2px solid #999;padding:10px 0}
+dialog{position:static;display:block;border:2px solid #444;padding:16px;max-width:360px;margin:12px auto}
+.ph{background:#ccc;height:12px;margin:6px 0}</style></head><body><section class="frame"><p class="tag">default</p><div class="screen"><main><h1>Sign in</h1><form><label for="n">Name</label><input id="n" type="text" autocomplete="username"><p><button>Sign in</button></p></form></main></div></section><section class="frame"><p class="tag">error</p><div class="screen"><main><h1>Sign in</h1><div class="err" role="alert">We don't know that name. Check it and try again.</div><form><label for="n">Name</label><input id="n" type="text" autocomplete="username"><p><button>Sign in</button></p></form></main></div></section></body></html>
