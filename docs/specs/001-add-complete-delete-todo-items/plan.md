@@ -159,3 +159,20 @@ Property tests use fast-check inside Vitest. "API" means Vitest against the rout
 - **Seed file handling:** accidental commit. Mitigated by the ignore rule, the AC6.6 test and secret-scan review.
 - **Edge profile vs Node driver:** if the owner later moves routes to the edge runtime, the `pg` driver must be swapped for Neon's serverless driver (data layer is the only place to change).
 - **Time zones:** covered by core unit tests with fixed timestamps.
+
+### Known limits to mark in the code
+
+The builder leaves each of these as a `TODO(#2)` comment at the place named, so the limit is visible where someone would change it. They are accepted for this story, not bugs.
+
+| Where | Comment to leave | Limit |
+| --- | --- | --- |
+| `next.config.mjs`, the CSP header (T1) | `TODO(#2): CSP allows 'unsafe-inline'; move to a per-request nonce in middleware (owner review)` | Inline scripts and styles are allowed |
+| `Dockerfile` (T1) | `TODO(#2): image is not built in CI; build and run it locally before deploying` | A broken image shows only at deploy |
+| `db/client.ts`, the `pg` branch (T4) | `TODO(#2): this branch is not exercised in CI (tests use PGlite); run the DATABASE_URL smoke test before deploying` | Pooling, SSL and connection-string mistakes show only in production |
+| `db/seed.ts` (T4) | `TODO(#2): never deletes users removed from accounts.local.json` | Removed names stay in `users` |
+| `apps/web/src/auth/session.ts` (T5) | `TODO(#2): stateless cookie cannot be revoked before expiry; replace with real auth before real users` | Stolen cookie works until it expires |
+| `apps/web/src/auth/session.ts`, the lifetime constant (T5) | `TODO(#2): 7-day lifetime is an assumption, confirm with the owner` | Lifetime not set by the spec |
+| `apps/web/src/app/auth/**`, the account list (T5) | `TODO(#2): dev-only sign-in from a local seed file; no passwords` | Not real authentication |
+| `apps/web/src/components/list/**`, the neutral styling (T7) | `TODO(#2): green accent from the visual direction is left to hi-fi` | Visual direction not applied |
+
+A task is not done until its markers are in place.
