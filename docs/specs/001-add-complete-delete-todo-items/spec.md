@@ -17,7 +17,7 @@ People who keep a personal to-do list have nowhere simple to track what they nee
 - **US3:** As a signed-in user, I want to delete an item after confirming so that I can remove tasks I no longer need without deleting by accident.
 - **US4:** As a signed-in user, I want to see my open items first and my completed items clearly distinct so that I can see what is left at a glance.
 - **US5:** As a signed-in user, I want my items to still be there on my next visit, and to be only mine, so that I can trust the list.
-- **US6:** As a user, I want to sign in by picking an account so that the app knows whose list to show (minimal sign-in, see Open questions 1 and 2).
+- **US6:** As a user, I want to sign in by picking an account that I set up in a local seed file, which is never pushed to git, so that the app knows whose list to show and no account data lives in the repository.
 
 ## 4. Acceptance criteria
 
@@ -66,7 +66,9 @@ Test type in brackets: unit, property or e2e.
 
 ### US6: Sign-in (minimal)
 
-- **AC6.1** Given the sign-in screen, then it lists the seeded accounts (at least two, "Asha" and "Ben") as "Continue as <name>" buttons. [e2e]
+- **AC6.1** Given a local seed file that defines accounts (at least two, for example "Asha" and "Ben"), then the sign-in screen lists exactly those accounts as "Continue as <name>" buttons. [e2e]
+- **AC6.5** Given the local seed file is missing or defines no accounts, then the sign-in screen shows "No accounts set up. Add accounts to your local seed file." with no sign-in buttons, and no list is reachable. [e2e]
+- **AC6.6** Given a fresh clone, then the repository holds no real account data: the local seed file is excluded from git, and only an example file with made-up names is committed to show the format. [unit or script check on the ignore rule and the example]
 - **AC6.2** Given I pick an account, then I land on that account's list, which shows "Signed in as <name>". [e2e]
 - **AC6.3** Given I press Sign out, then my session ends and the list is no longer reachable without signing in again. [e2e]
 - **AC6.4** Given sign-in fails, then the message "Sign-in failed. Pick an account to try again." appears and I stay on the sign-in screen. [e2e]
@@ -83,14 +85,15 @@ Test type in brackets: unit, property or e2e.
 - Reminders, due dates, tags, offline use.
 - Editing an item's title after creation.
 - Reordering items by hand, search, filters, bulk actions, undo after delete.
-- Real sign-in (passwords, email, social login, sign-up, account recovery). Only the minimal seeded-account sign-in in US6.
+- Real sign-in (passwords, email, social login, sign-up, account recovery). Only the minimal sign-in from a local seed file in US6.
+- Creating or editing accounts from inside the app. Accounts are set up only by editing the local seed file.
 - The calm green accent from the visual direction: the owner waived it in design review, so it is left to hi-fi and the build.
 - An audit trail of who created, completed or deleted what (see Open question 5).
 
 ## 6. Non-functional
 
 - **Accessibility:** WCAG 2.2 AA. Tap targets of at least 44 px, text contrast of at least 4.5:1, a visible focus style, inline errors announced to screen readers, the confirmation dialog traps focus and closes on Esc.
-- **Security and privacy:** every read and write of an item is checked against the signed-in user on the server; hiding items in the UI is not enough. No secrets, tokens or session identifiers in logs, errors or analytics. Titles are untrusted text.
+- **Security and privacy:** every read and write of an item is checked against the signed-in user on the server; hiding items in the UI is not enough. No secrets, tokens or session identifiers in logs, errors or analytics. Titles are untrusted text. Account data comes only from the local seed file, which is never committed and never written to logs.
 - **Performance:** list loads, and each add, complete or delete shows its result, in under 1 s at p95 for a list of up to 200 items on a normal connection. This is a working target, not an agreed SLA (Open question 6).
 - **Data retention:** items are kept until their owner deletes them. Delete is permanent (no recovery).
 - **Locale:** en-IN formats and the IST time zone for all displayed dates and times.
@@ -106,8 +109,10 @@ Test type in brackets: unit, property or e2e.
 
 | # | Question | Options | Recommended | Blocks the plan? |
 | --- | --- | --- | --- | --- |
-| 1 | The issue says auth is an always-human path and to ask before changing it. There is no auth yet; US6 needs a minimal sign-in. May this story add it? | (a) yes, minimal seeded-account sign-in, owner reviews that code; (b) split sign-in into its own story first | (a), with owner review of everything under `auth/` | **Yes** |
-| 2 | Is the seeded-account sign-in dev-only or acceptable long term? | (a) dev-only, a real-auth story before real users; (b) build real auth now | (a). File a follow-up story for real auth | No |
+| 1 | **Answered by the owner:** auth is set up through a local seed file that is not pushed to git. Everything under `auth/` still needs owner review before merge. | n/a | n/a | No (resolved) |
+| 2 | **Answered by the owner:** accounts live in the local seed file, so this sign-in is dev-only. A real-auth story is needed before real users. File that follow-up. | n/a | n/a | No (resolved) |
+| 10 | What does each account in the seed file hold? | (a) display name only (the id is derived or generated); (b) name plus a PIN or password | (a). Picking an account is the whole sign-in, so a secret adds nothing yet | No (needed for AC6.1) |
+| 11 | How do e2e tests and CI get accounts, since the real seed file is not in git? | (a) CI copies the committed example file into place; (b) tests create their own accounts at start-up | (a), because the example already has two made-up users | No |
 | 3 | Maximum title length. | 100, 140, 200 characters | 140 characters, counted after trimming | No (needed for AC1.4) |
 | 4 | Order within each group. | Open: newest first or oldest first. Completed: most recently completed first or newest first | Open: newest first. Completed: most recently completed first | No (needed for AC4.2) |
 | 5 | The constitution says every action "a teammate didn't take" is auditable (who created, completed, deleted what). Does that apply to this single-user story? | (a) no, out of scope here; (b) yes, record created / completed / deleted events | (a), because only the owner can touch their items. Revisit when sharing arrives | No |
@@ -124,4 +129,6 @@ Test type in brackets: unit, property or e2e.
 - **Untrusted titles:** escaping mistakes could allow script injection. Mitigation: AC1.5.
 - **Time zones:** IST formatting bugs, for example near midnight UTC versus IST. Mitigation: unit tests with fixed timestamps across that boundary.
 - **Visual distinctiveness:** the wireframes show no green accent, and hi-fi must supply it, or the product looks generic.
-- **Placeholder sign-in outliving its purpose:** if it ships to real users it gives no real protection. Mitigation: Open question 2.
+- **Placeholder sign-in outliving its purpose:** if it ships to real users it gives no real protection. Mitigation: Open question 2 (follow-up real-auth story).
+- **Seed file committed by accident:** real names or secrets could reach git. Mitigation: AC6.6 (ignore rule plus example file), and a secret scan in review.
+- **New contributors or CI with no seed file:** the app has no accounts. Mitigation: AC6.5 and Open question 11.
