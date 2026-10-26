@@ -1,5 +1,11 @@
 node_modules/
 dist/
+.next/
+# written into the repo by `next dev` / `next build`; not ours to commit
+apps/web/AGENTS.md
+
+# local account seed file (never committed; accounts.example.json shows the format)
+accounts.local.json
 .env
 .env.*
 !.env.example

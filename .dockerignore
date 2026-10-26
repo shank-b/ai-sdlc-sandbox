@@ -1,0 +1,14 @@
+.git
+node_modules
+**/.next
+.ai-sdlc
+.claude
+.github
+docs
+e2e
+test-results
+playwright-report
+accounts.local.json
+.env*
+Dockerfile
+.dockerignore
