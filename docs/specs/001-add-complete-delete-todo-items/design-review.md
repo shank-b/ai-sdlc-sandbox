@@ -1,72 +1,83 @@
 Story: #2
 
-# Design review: wireframes for add, complete and delete to-dos
+# Design re-review: wireframes for add, complete and delete to-dos
 
-Reviewed: `design-brief.md`, `storyboard.png`, `wireframes/board.html`, all 7 variant files and all 14 screenshots at 390 px and 1280 px. Measured in Playwright via `file://` URLs. Reviewer: ux-reviewer (did not create these artifacts).
+Reviewed: `design-brief.md` (including the Visual direction line), `storyboard.png` (sign-in B in J1 and J5), `wireframes/board.html`, all 7 variant files and all 14 screenshots. Measured in Playwright at 390 px and 1280 px. Reviewer: ux-reviewer (did not create these artifacts). This replaces the first review (verdict: rework, 8 changes).
 
 ## Measurements
 
 | Check | Result |
 | --- | --- |
-| Page horizontal overflow, variant files | None. `scrollWidth` equals `clientWidth` (390/390 and 1280/1280) for all 7 files |
-| Board horizontal overflow | The page does not overflow, but the variant rows do. "To-do list" row: 1606 px of content in a 1248 px box at 1280 px, so variant C sits partly off screen. At 390 px every row scrolls sideways (1064/358, 1606/358, 1064/358) |
-| Item checkboxes | **13x13 px** in every list and confirm variant. No wrapping `<label>`, so the title text is not clickable. They do have an accessible name (`aria-label="Mark Buy milk done"`) |
-| Buttons (Add, Delete, Sign in, Retry, Cancel, Keep) | All at least 44 px. Pass |
-| `<summary>Completed (1)</summary>` (list B) | 22 px tall. Fails |
-| Delete button names | Every row says just "Delete" (3 times in list A), so a screen reader can't tell which item each deletes |
-| Completed-item text | #888 on #fff = **3.54:1** at 16 px. Fails AA |
-| Timestamp meta text | #777 on #fff = **4.48:1** at 13.3 px. Fails AA, narrowly |
-| Placeholder | 4.19:1. It has a hidden label, so minor |
-| Add input label | Hidden `<label for="a">`, but `id="a"` repeats across the 3 state panels, so only the first is labelled. A wireframe artifact; don't carry it into the build |
-| Confirm A dialog | `<dialog open aria-labelledby>` opens non-modal: no backdrop, no focus trap. The 390 px shot shows the list underneath at full strength |
-| List B "pinned" add field | Only an annotation. No fixed or sticky element exists, so the thumb-reach claim is not shown |
-| Error banners | Use `role=alert`. Good |
+| Horizontal overflow, variant files | None. All 7 files at 390/390 and 1280/1280 |
+| Horizontal overflow, board | None. Columns wrap: 2 per row at 1280 px, 1 at 390 px. No broken images |
+| List A and confirm files: checkbox hit area | `<label class="chk">` wraps checkbox and title: 280x44 at 390 px, 990x44 at 1280 px. Clicking the title toggles the box. Checkbox drawn at 24x24 |
+| Per-row Delete (A files) | Underlined text button, 64x44, #444, named per item ("Delete Buy milk") |
+| Elements under 44 px (list A, confirm A/B, sign-in A/B) | None |
+| Completed text and timestamp meta | #595959 on #fff, about 7.0:1. Pass. Strikethrough kept |
+| Section headings h2 | #555, about 7.5:1. Pass |
+| Confirm A | `showModal()` with backdrop. Focus starts on Cancel. Tab cycles Cancel, Delete. Esc closes. Delete is filled dark, Cancel grey. Focus return to the row's Delete is only annotated (fine for a static wireframe) |
+| List A keyboard order | Sign out, input, Add, then per row: checkbox, Delete. Logical |
+| J1 empty-title state | `aria-invalid`, `aria-describedby="e-e"`, `role=alert`, field autofocused |
+| Duplicate ids | None in list A, confirm A/B, sign-in B. Still present in list B/C and sign-in A (not chosen) |
+| Lists B and C | Not reworked: checkboxes 13x13, Delete a heavy unnamed button, list B summary 22 px tall |
 
 ## Scores
 
 | Dimension | Score | Evidence |
 | --- | --- | --- |
-| Hierarchy | 6 | "My to-dos" title and the Add row read first, which is correct. But in every row the grey bordered Delete button (about 80x46 px) is the heaviest thing, while the main per-row action, the checkbox, is a 13 px square. Delete looks as heavy as Add. In confirm A, Cancel and Delete are styled the same |
-| Clarity | 7 | Good copy: "Couldn't save that change. Your list is unchanged.", "Delete "Buy milk"? This can't be undone.", en-IN timestamps ("22 Oct 2026, 7:12 pm IST"). Problems: the storyboard's J1 "Title is required" error state is missing from every list variant; list B's empty state says "Add your first to-do above" when the field is below; no list screen shows who is signed in, but J5 depends on that |
-| Consistency | 7 | Same type, borders and spacing in all 7 files. But confirm A uses "Cancel" and confirm B uses "Keep" for the same decision, and the add field moves between top (A, C) and bottom (B) |
-| Accessibility | 4 | 13 px checkboxes with no label hit area; identical "Delete" names; completed text at 3.54:1 and meta text at 4.48:1; non-modal dialog; 22 px summary; duplicate ids. Positives: aria-labels on checkboxes, a label on the add input, `role=alert` on errors, all buttons at least 44 px |
-| Mobile fit | 6 | Nothing clips at 390 px. But the J2 tap target is 13 px, the Delete column takes about 22% of the row width so "Call the bank about the card" is squeezed, list B's thumb-reach benefit is only claimed, and the confirm A modal doesn't separate itself from the page at 390 px |
-| Key-flow friction | 7 | J1: type, then Add. J2/J3: one tap each in A and C; B adds a disclosure tap before J3. J4: two taps. J5: one field (sign-in A) or one tap (sign-in B). Nothing blocks the flow, but the tiny checkbox makes J2/J3 error-prone on a phone |
-| Distinctiveness | 5 | Default system-ui with grey boxes. Expected for low-fi, but nothing yet says "this product" |
+| Hierarchy | 8 | List A: title, add row, then rows. Delete is a quiet link. Confirm A: destructive Delete clearly differs from Cancel. Sign out is a bordered grey button with the same weight as Add |
+| Clarity | 8 | J1 "Title is required" present. "Signed in as **Asha**" on every list screen. Good copy ("Couldn't save that change. Your list is unchanged.", "Delete "Buy milk"? This can't be undone."). Mismatch: storyboard J2 says "Couldn't update. Retry", wireframe says "Couldn't save that change…" |
+| Consistency | 8 | List A, confirm A and confirm B share one header, row and Delete pattern. List B/C still use the old row pattern (not chosen) |
+| Accessibility | 8 | Chosen files all at least 44 px, about 7:1 contrast, unique Delete names, modal focus on Cancel, inline error wired. Unproven: focus return to row's Delete is annotated only; native checkbox focus ring is the only focus style |
+| Mobile fit | 8 | Nothing clips at 390 px. Row label gets 280 of 358 px; "Call the bank about the card" fits on one line. Header is tight but fits |
+| Key-flow friction | 9 | J1: one tap to pick an account, then type and Add. J2/J3: one tap on a 280x44 target. J4: two taps, Cancel is the safe default. J5: redirect, then one tap |
+| Distinctiveness | 6 | Brief says: "Calm green accent; completed items struck through in grey; short, friendly empty-state copy." Strikethrough and empty copy are shown. The green accent is not: everything is greyscale system-ui, and the only colour is the browser's default blue checkbox. The board doesn't mention the direction |
 
 ## What a 10 looks like
 
-- **Hierarchy (6):** The whole row (checkbox and title) is the tap target and visually leads. Delete is a quieter secondary control: text or icon button, still at least 44 px, low-emphasis colour. In the dialog, Delete is styled as destructive and clearly differs from Cancel.
-- **Accessibility (4):** Checkbox and title are wrapped in one `<label>` with a hit area of at least 44x44. Each Delete is named "Delete Buy milk". Completed and meta text reach at least 4.5:1 (for example #595959; keep the strikethrough). The confirm uses `showModal()` with a backdrop, focus starts on Cancel, and Esc or Cancel returns focus to the row's Delete, as storyboard J4 says. The add input has `aria-describedby` pointing at the "Title is required" message.
-- **Mobile fit (6):** The 390 px shot shows a checkbox row that is easy to hit with a thumb. Titles get the full row width (Delete compact or right-aligned without a wide button). The dialog sits on a dimmed backdrop. If bottom placement is chosen, show it with real sticky positioning.
-- **Distinctiveness (5):** One line of visual direction for the hi-fi stage (accent colour, completed-item treatment, empty-state voice) so the build doesn't ship browser defaults. Can wait; doesn't block structure.
+- **Distinctiveness (6):** The chosen wireframes (sign-in B, list A, confirm A) show the one accent the brief asks for. Checkbox `accent-color`, the Add button and the focus ring all use one calm green that passes contrast (for example #1F7A4D, about 5.3:1 with white text). The confirm Delete stays a separate destructive style. The board carries a one-line "Visual direction" note so hi-fi and the build start from it, not from browser defaults.
 
 ## AI-slop flags
 
-None of the usual patterns: no gradient hero, emoji, stock icons, lorem or invented testimonials. Minor:
+No gradient hero, emoji, stock icons, lorem ipsum or invented testimonials. Minor:
 
-- List C empty state: the dashed "Completed (0) — Finished items land here." box takes a full block and says almost nothing.
-- List B screenshots: the annotation "(add field pinned to the bottom of the screen)" appears as UI text, so the shot looks like a shipped label rather than a note.
-- Empty-state copy is centred in a dashed box in all variants. Generic, but acceptable at low-fi.
+- **Every empty state:** centred copy in a dashed box is a generic pattern. Acceptable at low-fi; in hi-fi the friendly voice should carry it, not the box.
+- **Sign-in B:** each "Continue as …" button sits in an `<li>` that inherits the list-row bottom border, drawing dividers that mean nothing.
+- **List B:** the annotation "(add field pinned to the bottom of the screen)" renders as UI text, and the empty-state copy still says "above". Unchosen variant.
+- **Confirm A, 390 px shot:** the dialog covers part of the monospace annotation. Cosmetic.
 
-## Recommendation
+## Recommendation (per screen)
 
-- **Sign in: B (pick a seeded account).** Fits the brief's dev-only placeholder auth and the recommendation to seed two users. No typing and no unknown-name path; makes the J5 isolation demo trivial. **Owner decision needed:** this differs from storyboard J5, which shows a name field and an "unknown / blank name" branch. Either update the storyboard or keep A. From A, take the specific error copy.
-- **To-do list: A (single column, add on top).** Shortest J2/J3 (one tap, Completed always visible), simplest reading order, no layout jump when an item moves (C's weakness). At 390 px, C is the same as A anyway. From B: collapse Completed past a threshold once it grows (later, not now).
-- **Delete confirmation: A (modal dialog).** Matches storyboard J4 (Cancel/Delete, Esc returns focus to Delete), can trap focus, names the item. B is easier to miss and resizes the row. From B, keep "This can't be undone" next to the item name, which A already does.
+- **Sign in: B (pick a seeded account).** Matches the storyboard (J1, J5); its error copy "Sign-in failed. Pick an account to try again." matches the J5 failure branch. One tap. Take nothing from A. Remove the stray row borders.
+- **To-do list: A (single column, add on top).** Every rework applied; shortest J2/J3 path. Take from B, later: collapse Completed once it grows past a threshold.
+- **Delete confirmation: A (modal dialog).** Real modal, safe default focus, distinct destructive action, names the item; matches J4. B uses the same copy, so nothing extra to take.
+
+## Status of the 8 prior changes
+
+| # | Change | Status |
+| --- | --- | --- |
+| 1 | Checkbox and title in one `<label>`, at least 44x44 | Resolved (list A, confirm A/B): 280x44, title click toggles. Not applied to B/C (not chosen) |
+| 2 | Demote Delete, name it "Delete <title>" | Resolved (list A, confirm A/B) |
+| 3 | Completed and meta text at 4.5:1 or better | Resolved: #595959, about 7.0:1 |
+| 4 | Confirm A as a modal, destructive Delete, Cancel focus, Esc annotation | Resolved |
+| 5 | J1 "Title is required" inline error | Resolved |
+| 6 | Signed-in user and Sign out on the list | Resolved |
+| 7 | Unique ids; one word for cancel | Resolved for chosen files; duplicates remain only in unchosen list B/C and sign-in A |
+| 8 | Board columns wrap | Resolved: no sideways scroll at 390 or 1280 px |
+
+Visual direction: partly reflected (grey strikethrough and short empty copy yes; green accent missing). Sign-in B: reflected correctly in the storyboard (J1, J5) and `signin-b.html`.
 
 ## Verdict: rework
 
+All 8 structural changes landed. Every dimension is 8 or 9 except Distinctiveness at 6; the pass rule needs 7 or more everywhere. This is a small, cosmetic rework. No journey has a blocking friction.
+
 Changes the ux-designer must make:
 
-1. **Checkbox hit area:** wrap checkbox and title in one `<label>`, at least 44x44 px, so tapping the title toggles the item (list A and the confirm files).
-2. **Demote per-row Delete** to a secondary style (still at least 44 px) with the accessible name "Delete <title>".
-3. **Contrast:** completed-item text and timestamp meta at 4.5:1 or better.
-4. **Confirm A:** render as a modal (`showModal()` plus a backdrop in the screenshot), give Delete a distinct destructive style, default focus on Cancel, and annotate that Esc or Cancel returns focus to the row's Delete.
-5. **Add the J1 inline-error state** "Title is required" to list A, with focus kept on the field and `aria-describedby`.
-6. **Show the signed-in user and a Sign out control** on the list screen (J5).
-7. **Use unique ids** for each state panel, and pick one word for the cancel action ("Cancel").
-8. **Board:** stack or wrap the variant columns (`flex-wrap: wrap`) so variant C isn't off screen at 1280 px and rows don't scroll sideways at 390 px.
-9. Low priority: add a one-line visual direction note for hi-fi.
+1. **Apply the visual direction to the chosen variants** (`signin-b.html`, `list-a.html`, `confirm-a.html`): one calm green accent on checkbox `accent-color`, the Add button and the focus ring, at 4.5:1 or better against its background (for example #1F7A4D); keep the confirm Delete as a separate destructive style; re-shoot the screenshots at 390 px and 1280 px.
+2. **Add the visual direction line to `board.html`** next to the intro.
+3. **Sign-in B: remove the inherited row borders** under the "Continue as …" buttons.
+4. **Optional, not blocking:** give Sign out a quieter style than Add; pick one save-failure string between storyboard ("Couldn't update") and wireframe ("Couldn't save that change"), or leave it to the spec.
 
-Re-review after changes 1–8. If they land, accessibility, hierarchy and mobile fit should reach 7 or better.
+Carry into the spec and E2E (no wireframe change needed): Esc or Cancel on the confirm dialog returns focus to the row's "Delete <title>" button.
+
+Open question for the owner: Distinctiveness is the only score under 7 and it is about colour in low-fi wireframes. Waive it and pass now, leaving the accent to hi-fi?
