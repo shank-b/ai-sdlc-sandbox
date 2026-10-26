@@ -1,0 +1,38 @@
+Story: #2
+
+- [ ] T1: walking skeleton: Next.js app shell, TypeScript, lint, Vitest, Playwright, seed-file ignore rule (adds dependencies, owner approval needed)
+  - paths: package.json, package-lock.json, tsconfig.json, next.config.mjs, eslint.config.mjs, vitest.config.ts, playwright.config.ts, .gitignore, Dockerfile, .dockerignore, apps/web/src/app/layout.tsx, apps/web/src/app/page.tsx, apps/web/src/app/globals.css, scripts/check-seed-ignore.test.sh
+  - tests: script test that `accounts.local.json` is git-ignored and `accounts.example.json` is not (AC6.6, ignore half); Vitest smoke test; Playwright smoke test that the home page loads and that its response carries the security headers; local `docker build` and `docker run` of the image serves the home page (not run in CI)
+  - deps: none
+- [ ] T2: core domain rules: title validation, ordering, ownership rule, IST formatting
+  - paths: packages/core/**
+  - tests: unit for validateTitle (AC1.2, AC1.3, AC1.4), formatIst across the UTC/IST midnight boundary (AC1.7), canAccess (AC5.3); property tests for groupAndOrder (AC4.1, AC4.2) and for the per-user filter rule (AC5.2)
+  - deps: T1
+- [ ] T3: database schema and first migration (data-model change, always-human path db/migrations/**, adds dependencies drizzle-orm, drizzle-kit, pg, @electric-sql/pglite)
+  - paths: db/schema.ts, db/migrations/**, drizzle.config.ts, package.json
+  - tests: migration applies to an empty in-memory PGlite database and the schema test checks the 1 to 140 title check, the unique user name and cascade delete
+  - deps: T1
+- [ ] T4: data access layer scoped by user, driver switch (PGlite or pg), start-up seeding and the seed command
+  - paths: db/client.ts, db/seed.ts, accounts.example.json, apps/web/src/data/**, apps/web/src/instrumentation.ts, package.json
+  - tests: integration tests on in-memory PGlite that every data function returns or changes only the caller's rows (AC5.2, AC5.3); one smoke test of the same data layer against real Postgres, skipped unless `DATABASE_URL` is set; seed test that the example file produces exactly Asha and Ben and a missing file produces no users (AC6.6, example half)
+  - deps: T2, T3
+- [ ] T5: sign-in, session and middleware (always-human path auth/)
+  - paths: apps/web/src/auth/**, apps/web/src/app/auth/**, apps/web/src/middleware.ts, e2e/support/**, e2e/auth/**
+  - tests: unit for cookie sign, verify, tamper and expiry; log-content test (AC5.5); Playwright for AC5.4 (page redirect), AC6.1, AC6.2, AC6.3, AC6.4, AC6.5
+  - deps: T1, T4
+- [ ] T6: item API: add, complete and un-complete, delete
+  - paths: apps/web/src/app/api/todos/**
+  - tests: API tests on in-memory PGlite for AC1.4 (400), AC2.3, AC3.2, AC5.3 (A uses B's id, gets 404, row unchanged), AC5.4 (401 without a cookie) and AC5.5 (no cookie or secret values in logs); Origin check test
+  - deps: T2, T4, T5
+- [ ] T7: list screen: add form, rows, complete toggle, empty state, ordering
+  - paths: apps/web/src/components/list/**, apps/web/src/app/page.tsx, apps/web/src/app/globals.css, e2e/list/**
+  - tests: Playwright for AC1.1, AC1.2, AC1.4, AC1.5, AC1.6, AC1.7, AC1.8, AC2.1, AC2.2, AC2.3, AC2.4, AC2.5, AC4.1, AC4.3, AC7.3
+  - deps: T6
+- [ ] T8: delete confirmation dialog
+  - paths: apps/web/src/components/delete-dialog/**, e2e/delete/**
+  - tests: Playwright for AC3.1, AC3.2, AC3.3, AC3.4, AC3.5
+  - deps: T7
+- [ ] T9: cross-cutting end-to-end checks: persistence, isolation, responsive and keyboard
+  - paths: e2e/journeys/**
+  - tests: Playwright for AC5.1, AC5.2 (Asha and Ben), AC7.1 (390 and 1280 px), AC7.2 (keyboard-only run and tab order)
+  - deps: T8
