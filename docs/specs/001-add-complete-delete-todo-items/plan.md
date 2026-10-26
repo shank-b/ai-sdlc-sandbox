@@ -12,7 +12,8 @@ Owner decisions that shape the design:
 
 - Sign-in accounts come from a local seed file that is never pushed to git (PR #14, spec US6 and AC6.5/AC6.6).
 - Anything under an `auth/` directory needs owner review (CODEOWNERS).
-- Spec open questions 3 to 11 are decided by their recommended defaults unless the owner says otherwise at G2: title limit 140, open newest first, completed most recently completed first, audit trail out of scope, 1 s p95 target, duplicates allowed, wireframe wording for save failures, seed accounts hold a display name only, CI copies the example seed file.
+- Spec open questions 3 to 11 are decided by their recommended defaults unless the owner says otherwise at G2: title limit 140, open newest first, completed most recently completed first, audit trail out of scope, 1 s p95 target, duplicates allowed, wireframe wording for save failures, seed accounts hold a display name only, and the end-to-end server seeds the example accounts at start-up.
+- Owner decision at G2 review: tests and CI use an in-memory Postgres (PGlite), not a Postgres container, so `ci.yml` is not edited.
 
 ## 2. Options
 
@@ -21,8 +22,8 @@ Owner decisions that shape the design:
 | Where the account data lives at runtime | (a) read the seed file on every request; (b) a seed command copies the file into a `users` table; the app only reads the table | **(b).** Items need a foreign key to a user, and Vercel has no local file anyway. The file stays a local-only input to `npm run seed`. See ADR 0004 |
 | Session | (a) signed, stateless cookie holding the user id; (b) sessions table with random tokens | **(a).** No extra table, works in edge middleware through Web Crypto, no new dependency. Ceiling: sign-out only clears the cookie, a stolen cookie can't be revoked until it expires. Acceptable for a dev-only sign-in. See ADR 0002 |
 | API shape | (a) Next.js route handlers (`/api/todos`); (b) server actions | **(a).** AC5.3 and AC5.4 are HTTP-level checks, so a plain JSON API is directly testable and the UI is a thin client over it |
-| Database driver | (a) Neon serverless driver (HTTP, edge runtime); (b) `pg` on the Node runtime against Neon's pooled connection string | **(b).** The same driver works against local and CI Postgres and Neon, so tests run on real Postgres. Route handlers don't need the edge runtime. Only the middleware runs at the edge, and it only checks the cookie (Web Crypto) |
-| Test database in CI | (a) a Postgres service container in `ci.yml` (owner edit); (b) in-process PGlite | **(a).** Tests exercise the same engine as production. Costs one owner-reviewed workflow edit (task T4). If the owner prefers no workflow edit, (b) is the fallback and needs one more dependency |
+| Production database driver | (a) Neon serverless driver (HTTP, edge runtime); (b) `pg` on the Node runtime against Neon's pooled connection string | **(b).** Route handlers don't need the edge runtime. Only the middleware runs at the edge, and it only checks the cookie (Web Crypto) |
+| Test database | (a) a Postgres service container in `ci.yml` (owner edit); (b) in-memory PGlite (real Postgres compiled to WASM) | **(b), the owner's choice.** No workflow edit, no Docker, zero setup locally. Costs one dev dependency and a second driver path: `db/client.ts` uses PGlite when `DB_DRIVER=pglite`, otherwise `pg`. The queries are identical, only the connection differs. CI never exercises the `pg` path, so one real-Postgres smoke test runs locally against `DATABASE_URL` (see Risks) |
 | Completed state | (a) boolean `done`; (b) nullable `completed_at` timestamp | **(b).** One column gives both the state and the "most recently completed first" order |
 | Sharing code between the app and tests | (a) npm workspaces; (b) one root package with a TypeScript path alias for `packages/core` | **(b).** Fewer moving parts. Revisit if a second app appears |
 
@@ -88,52 +89,51 @@ Data-model change: **yes** (two new tables). Timestamps are stored in UTC and fo
 
 ## 5. Test strategy
 
-Property tests use fast-check inside Vitest. "API" means Vitest against the route handlers with a real Postgres. "e2e" means Playwright against the running app.
+Property tests use fast-check inside Vitest. "API" means Vitest against the route handlers with an in-memory PGlite database. "e2e" means Playwright against the running app, which Playwright starts with `DB_DRIVER=pglite`; the server creates the database, applies the migration and seeds `accounts.example.json` at start-up (`apps/web/src/instrumentation.ts`), so the tests only use the browser.
 
 | AC | Task | Test that proves it |
 | --- | --- | --- |
-| AC1.1 | T8 | e2e: add "Buy milk", it appears in open items, field cleared |
-| AC1.2 | T2, T8 | unit `validateTitle` for empty and whitespace; e2e shows "Title is required", focus stays |
+| AC1.1 | T7 | e2e: add "Buy milk", it appears in open items, field cleared |
+| AC1.2 | T2, T7 | unit `validateTitle` for empty and whitespace; e2e shows "Title is required", focus stays |
 | AC1.3 | T2 | unit: surrounding spaces trimmed |
-| AC1.4 | T2, T7, T8 | unit at the limit and one over; API 400 `title_too_long`; e2e message names the limit |
-| AC1.5 | T8 | e2e: `<b>x</b>` renders as literal text |
-| AC1.6 | T8 | e2e: empty-state copy and add field |
-| AC1.7 | T2, T8 | unit `formatIst` with fixed timestamps across the UTC/IST midnight boundary; e2e shows the formatted time |
-| AC1.8 | T8 | e2e: Enter submits |
-| AC2.1 | T8 | e2e: click the title and press Space; item moves under Completed, struck through |
-| AC2.2 | T8 | e2e: untick returns it to open |
-| AC2.3 | T7, T8 | API PATCH persists; e2e reload keeps it completed |
-| AC2.4 | T8 | e2e with the PATCH route forced to fail: error with retry, previous state kept |
-| AC2.5 | T8 | e2e: bounding box of checkbox plus title is at least 44 by 44 at 390 px |
-| AC3.1 | T9 | e2e: dialog names the item with Cancel and Delete |
-| AC3.2 | T7, T9 | API DELETE removes the row; e2e item stays gone after reload |
-| AC3.3 | T9 | e2e: Cancel and Esc leave the list unchanged, focus returns to that row's Delete |
-| AC3.4 | T9 | e2e: focus starts on Cancel, Tab cycles inside the dialog |
-| AC3.5 | T9 | e2e with DELETE forced to fail: error shown, item remains |
-| AC4.1 | T2, T8 | property: for any mix of items, all open precede all completed; e2e shows the two labelled groups |
+| AC1.4 | T2, T6, T7 | unit at the limit and one over; API 400 `title_too_long`; e2e message names the limit |
+| AC1.5 | T7 | e2e: `<b>x</b>` renders as literal text |
+| AC1.6 | T7 | e2e: empty-state copy and add field |
+| AC1.7 | T2, T7 | unit `formatIst` with fixed timestamps across the UTC/IST midnight boundary; e2e shows the formatted time |
+| AC1.8 | T7 | e2e: Enter submits |
+| AC2.1 | T7 | e2e: click the title and press Space; item moves under Completed, struck through |
+| AC2.2 | T7 | e2e: untick returns it to open |
+| AC2.3 | T6, T7 | API PATCH persists; e2e reload keeps it completed |
+| AC2.4 | T7 | e2e with the PATCH route forced to fail: error with retry, previous state kept |
+| AC2.5 | T7 | e2e: bounding box of checkbox plus title is at least 44 by 44 at 390 px |
+| AC3.1 | T8 | e2e: dialog names the item with Cancel and Delete |
+| AC3.2 | T6, T8 | API DELETE removes the row; e2e item stays gone after reload |
+| AC3.3 | T8 | e2e: Cancel and Esc leave the list unchanged, focus returns to that row's Delete |
+| AC3.4 | T8 | e2e: focus starts on Cancel, Tab cycles inside the dialog |
+| AC3.5 | T8 | e2e with DELETE forced to fail: error shown, item remains |
+| AC4.1 | T2, T7 | property: for any mix of items, all open precede all completed; e2e shows the two labelled groups |
 | AC4.2 | T2 | property: open sorted newest first, completed by most recent `completed_at` |
-| AC4.3 | T8 | e2e: strikethrough plus "Completed" label; computed contrast of at least 4.5:1 |
-| AC5.1 | T10 | e2e: add items, sign out, sign in again in a fresh browser context, same items |
-| AC5.2 | T2, T5, T10 | property over generated users and items (data layer returns only the caller's rows); e2e with Asha and Ben |
-| AC5.3 | T2, T7 | unit `canAccess`; API: A calls PATCH and DELETE on B's id, gets 404, B's row unchanged, body has no item data |
-| AC5.4 | T6, T7 | API and e2e: no cookie gives redirect (page) or 401 (API) with no item data |
-| AC5.5 | T6, T7 | unit: forced errors in the handlers write log lines with no cookie or secret values |
-| AC6.1 | T6 | e2e: seeded from the example file, the sign-in screen lists exactly Asha and Ben |
-| AC6.2 | T6 | e2e: pick an account, land on the list showing "Signed in as <name>" |
-| AC6.3 | T6 | e2e: Sign out ends the session; the list redirects to sign-in |
-| AC6.4 | T6 | e2e: a forced failed sign-in shows the message and stays on sign-in |
-| AC6.5 | T6 | e2e: empty `users` table shows "No accounts set up…" with no buttons |
-| AC6.6 | T1, T5 | script test: `git check-ignore accounts.local.json` succeeds and `accounts.example.json` is tracked with made-up names only |
-| AC7.1 | T10 | e2e at 390 and 1280 px: no horizontal scroll |
-| AC7.2 | T10 | e2e: keyboard-only run through sign-in, add, complete, un-complete and delete; tab order as specified |
-| AC7.3 | T8 | e2e: each Delete button's accessible name includes the title |
+| AC4.3 | T7 | e2e: strikethrough plus "Completed" label; computed contrast of at least 4.5:1 |
+| AC5.1 | T9 | e2e: add items, sign out, sign in again in a fresh browser context, same items |
+| AC5.2 | T2, T4, T9 | property over generated users and items (data layer returns only the caller's rows); e2e with Asha and Ben |
+| AC5.3 | T2, T6 | unit `canAccess`; API: A calls PATCH and DELETE on B's id, gets 404, B's row unchanged, body has no item data |
+| AC5.4 | T5, T6 | API and e2e: no cookie gives redirect (page) or 401 (API) with no item data |
+| AC5.5 | T5, T6 | unit: forced errors in the handlers write log lines with no cookie or secret values |
+| AC6.1 | T5 | e2e: seeded from the example file, the sign-in screen lists exactly Asha and Ben |
+| AC6.2 | T5 | e2e: pick an account, land on the list showing "Signed in as <name>" |
+| AC6.3 | T5 | e2e: Sign out ends the session; the list redirects to sign-in |
+| AC6.4 | T5 | e2e: a forced failed sign-in shows the message and stays on sign-in |
+| AC6.5 | T5 | e2e: empty `users` table shows "No accounts set up…" with no buttons |
+| AC6.6 | T1, T4 | script test: `git check-ignore accounts.local.json` succeeds and `accounts.example.json` is tracked with made-up names only |
+| AC7.1 | T9 | e2e at 390 and 1280 px: no horizontal scroll |
+| AC7.2 | T9 | e2e: keyboard-only run through sign-in, add, complete, un-complete and delete; tab order as specified |
+| AC7.3 | T7 | e2e: each Delete button's accessible name includes the title |
 
 ## 6. Always-human paths touched
 
-- `**/auth/**`: T6 (`apps/web/src/auth/**`, `apps/web/src/app/auth/**`).
+- `**/auth/**`: T5 (`apps/web/src/auth/**`, `apps/web/src/app/auth/**`).
 - `db/migrations/**`: T3.
-- `.github/workflows/**`: T4 (`ci.yml`: add a Postgres service and the seed step).
-- None of the others (`.claude/**`, `.mcp.json`, `infra/**`, `scripts/deploy.sh`).
+- None of the others, and `.github/workflows/**` is not touched (CI already runs lint, typecheck, tests and Playwright once a `package.json` exists) (`.claude/**`, `.mcp.json`, `infra/**`, `scripts/deploy.sh`).
 
 ## 7. Rollout and rollback
 
@@ -146,7 +146,8 @@ Property tests use fast-check inside Vitest. "API" means Vitest against the rout
 - **Greenfield size:** T1 sets up the whole toolchain, and the first build PR adds many dependencies (ADR 0001), which stops for owner approval.
 - **Cross-user leaks:** mitigated by making `userId` a required parameter of every data function, the 404-for-foreign-id rule, and AC5.2/AC5.3 as tests.
 - **Stateless sessions:** no server-side revoke. Mitigated by a short 7-day lifetime and dev-only use (spec Q2).
-- **CI needs a Postgres service:** until the owner merges T4, e2e and API tests can't run in CI. Local runs need a Postgres (`DATABASE_URL`).
+- **The `pg` path isn't tested in CI:** CI uses PGlite, so a mistake in the `pg` connection setup (pooling, SSL, the Neon connection string) would only show up in production. Mitigation: one smoke test that runs the data layer against a real Postgres when `DATABASE_URL` is set, run locally before the first deploy.
+- **PGlite differences:** a WASM single-user build that can lag behind the Postgres version on Neon. The schema uses only core features (uuid default, check constraint, foreign key, `timestamptz`, a composite index), so the risk is low.
 - **Seed file handling:** accidental commit. Mitigated by the ignore rule, the AC6.6 test and secret-scan review.
 - **Edge profile vs Node driver:** if the owner later moves routes to the edge runtime, the `pg` driver must be swapped for Neon's serverless driver (data layer is the only place to change).
 - **Time zones:** covered by core unit tests with fixed timestamps.

@@ -14,7 +14,7 @@ The owner decided that sign-in accounts are set up in a local seed file that is 
 
 - The owner writes accounts into `accounts.local.json` at the repository root. The file is listed in `.gitignore`. It holds a list of display names only (spec open question 10).
 - `accounts.example.json` is committed. It contains made-up names (Asha and Ben) and shows the format.
-- `npm run seed` reads `accounts.local.json` (a missing file seeds nothing), then inserts any names not yet in `users`. It never deletes users. CI copies the example file into place before seeding.
+- `npm run seed` reads `accounts.local.json` (a missing file seeds nothing), then inserts any names not yet in `users`. It never deletes users. In tests and end-to-end runs the in-memory database is seeded from `accounts.example.json` at server start-up, so CI needs no seed file.
 - The running app reads only the `users` table. It never reads the file.
 - The file holds no passwords or PINs, so there is nothing secret to log.
 
