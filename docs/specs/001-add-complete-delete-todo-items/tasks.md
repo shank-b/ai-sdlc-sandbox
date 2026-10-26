@@ -1,8 +1,8 @@
 Story: #2
 
 - [ ] T1: walking skeleton: Next.js app shell, TypeScript, lint, Vitest, Playwright, seed-file ignore rule (adds dependencies, owner approval needed)
-  - paths: package.json, package-lock.json, tsconfig.json, next.config.mjs, eslint.config.mjs, vitest.config.ts, playwright.config.ts, .gitignore, apps/web/src/app/layout.tsx, apps/web/src/app/page.tsx, apps/web/src/app/globals.css, scripts/check-seed-ignore.test.sh
-  - tests: script test that `accounts.local.json` is git-ignored and `accounts.example.json` is not (AC6.6, ignore half); Vitest smoke test; Playwright smoke test that the home page loads
+  - paths: package.json, package-lock.json, tsconfig.json, next.config.mjs, eslint.config.mjs, vitest.config.ts, playwright.config.ts, .gitignore, Dockerfile, .dockerignore, apps/web/src/app/layout.tsx, apps/web/src/app/page.tsx, apps/web/src/app/globals.css, scripts/check-seed-ignore.test.sh
+  - tests: script test that `accounts.local.json` is git-ignored and `accounts.example.json` is not (AC6.6, ignore half); Vitest smoke test; Playwright smoke test that the home page loads and that its response carries the security headers; local `docker build` and `docker run` of the image serves the home page (not run in CI)
   - deps: none
 - [ ] T2: core domain rules: title validation, ordering, ownership rule, IST formatting
   - paths: packages/core/**

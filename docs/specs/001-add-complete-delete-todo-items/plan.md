@@ -25,6 +25,8 @@ Owner decisions that shape the design:
 | Production database driver | (a) Neon serverless driver (HTTP, edge runtime); (b) `pg` on the Node runtime against Neon's pooled connection string | **(b).** Route handlers don't need the edge runtime. Only the middleware runs at the edge, and it only checks the cookie (Web Crypto) |
 | Test database | (a) a Postgres service container in `ci.yml` (owner edit); (b) in-memory PGlite (real Postgres compiled to WASM) | **(b), the owner's choice.** No workflow edit, no Docker, zero setup locally. Costs one dev dependency and a second driver path: `db/client.ts` uses PGlite when `DB_DRIVER=pglite`, otherwise `pg`. The queries are identical, only the connection differs. CI never exercises the `pg` path, so one real-Postgres smoke test runs locally against `DATABASE_URL` (see Risks) |
 | Completed state | (a) boolean `done`; (b) nullable `completed_at` timestamp | **(b).** One column gives both the state and the "most recently completed first" order |
+| Where it deploys | (a) Vercel only; (b) Vercel plus a container build (`output: 'standalone'`, Dockerfile); (c) a lighter framework | **(b), the owner's choice.** Any container host runs it with two environment variables (`DATABASE_URL`, `SESSION_SECRET`), and Vercel is unchanged. (c) is lighter but needs a constitution change. See ADR 0001 |
+| Seed command runner | (a) `tsx`; (b) Node's built-in `--experimental-strip-types` | **(b).** One dependency fewer. The seed code uses `.ts` import extensions and plain syntax |
 | Sharing code between the app and tests | (a) npm workspaces; (b) one root package with a TypeScript path alias for `packages/core` | **(b).** Fewer moving parts. Revisit if a second app appears |
 
 ## 3. Design
@@ -68,6 +70,10 @@ Every `/api/todos` route returns 401 without a valid session. The list page read
 ### Session cookie
 
 `HttpOnly`, `SameSite=Lax`, `Secure` in production, value `<userId>.<expiry>.<HMAC-SHA-256 signature>` signed with `SESSION_SECRET` (an environment variable; never in the repo, never logged). Lifetime 7 days (an assumption; the spec doesn't say). Mutating routes also reject requests whose `Origin` header doesn't match the host (CSRF defence in addition to `SameSite`).
+
+### Security headers and packaging
+
+`next.config.mjs` adds a Content-Security-Policy, `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options` and `Permissions-Policy` to every response, and sets `output: 'standalone'`. A `Dockerfile` and `.dockerignore` build a small runtime image. Ceiling: the CSP still allows inline scripts and styles; a nonce-based policy needs the middleware (an always-human path) and is a follow-up. React already escapes titles (AC1.5), so the headers are defence in depth.
 
 ### Error handling and logging
 
@@ -137,7 +143,7 @@ Property tests use fast-check inside Vitest. "API" means Vitest against the rout
 
 ## 7. Rollout and rollback
 
-- Rollout order: apply the migration to Neon (`npm run db:migrate`, run by the owner), run `npm run seed` locally against that database with the real `accounts.local.json`, set `SESSION_SECRET` in Vercel, then deploy. Deploy itself stays with the owner (`scripts/deploy.sh`).
+- Rollout order: apply the migration to the Postgres host (Neon or any other; `npm run db:migrate`, run by the owner), run `npm run seed` locally against that database with the real `accounts.local.json`, set `DATABASE_URL` and `SESSION_SECRET` on the host (Vercel, or a container host running the Docker image), then deploy. Deploy itself stays with the owner (`scripts/deploy.sh`).
 - No feature flag: the app has no existing users or data.
 - Rollback: redeploy the previous build. The migration only adds tables, so the old build is unaffected. To undo the data change, drop `todos` then `users` (documented in the migration PR; Drizzle generates no down migration). Deleting item data is irreversible.
 
@@ -147,6 +153,8 @@ Property tests use fast-check inside Vitest. "API" means Vitest against the rout
 - **Cross-user leaks:** mitigated by making `userId` a required parameter of every data function, the 404-for-foreign-id rule, and AC5.2/AC5.3 as tests.
 - **Stateless sessions:** no server-side revoke. Mitigated by a short 7-day lifetime and dev-only use (spec Q2).
 - **The `pg` path isn't tested in CI:** CI uses PGlite, so a mistake in the `pg` connection setup (pooling, SSL, the Neon connection string) would only show up in production. Mitigation: one smoke test that runs the data layer against a real Postgres when `DATABASE_URL` is set, run locally before the first deploy.
+- **Docker image not built in CI:** a broken Dockerfile would only show at deploy. Mitigation: build and run it locally in T1 before merge.
+- **CSP allows inline scripts:** weaker than a nonce-based policy (see ADR 0001); follow-up needs an owner-reviewed middleware change.
 - **PGlite differences:** a WASM single-user build that can lag behind the Postgres version on Neon. The schema uses only core features (uuid default, check constraint, foreign key, `timestamptz`, a composite index), so the risk is low.
 - **Seed file handling:** accidental commit. Mitigated by the ignore rule, the AC6.6 test and secret-scan review.
 - **Edge profile vs Node driver:** if the owner later moves routes to the edge runtime, the `pg` driver must be swapped for Neon's serverless driver (data layer is the only place to change).
