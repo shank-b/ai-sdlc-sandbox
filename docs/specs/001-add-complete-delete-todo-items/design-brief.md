@@ -83,8 +83,8 @@ no premature shared/assigned-list work. Confirmed with the owner.
 
 Files: `storyboard.excalidraw` (editable), `storyboard.svg`, `storyboard.png`. Frames run left to right; dashed frames are failure or empty-state branches.
 
-- **J1, first item:** Sign in (name field, Sign in button) → Empty list ("Nothing here yet", add field) → First item shown (item with IST timestamp). Branch: adding an empty title shows an inline "Title is required" error and keeps focus on the field.
+- **J1, first item:** Sign in (pick a seeded account: Continue as Asha / Continue as Ben) → Empty list ("Nothing here yet", add field) → First item shown (item with IST timestamp). Branch: adding an empty title shows an inline "Title is required" error and keeps focus on the field.
 - **J2, complete:** Open items (two unchecked) → tick checkbox or press Space → Item completed (item moves under a "completed" divider, struck and grey). Branch: if the save fails, an error with retry shows and the item keeps its old state.
 - **J3, un-complete:** Completed section → untick checkbox → Back in open (item returns to the open list).
 - **J4, delete:** Item row with Delete → press Delete → Confirm dialog (Cancel / Delete) → confirm → Item gone. Branch: Cancel or Esc leaves the list unchanged and returns focus to Delete.
-- **J5, return later:** Visit app with no session → redirect → Sign in → Own list only (only the signed-in user's items). Branches: unknown or blank name shows an inline sign-in error; requesting another user's item id is rejected by the server (404/forbidden), not just hidden in the UI.
+- **J5, return later:** Visit app with no session → redirect → Sign in → Own list only (only the signed-in user's items). Branches: a failed sign-in shows an inline error and stays on the sign-in screen; requesting another user's item id is rejected by the server (404/forbidden), not just hidden in the UI.
