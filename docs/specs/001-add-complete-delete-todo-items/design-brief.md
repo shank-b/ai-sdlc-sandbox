@@ -44,6 +44,10 @@ no premature shared/assigned-list work. Confirmed with the owner.
 - Any change to a pre-existing auth system — there isn't one; this story adds only the minimal
   placeholder described above.
 
+## Visual direction
+
+Calm green accent; completed items struck through in grey; short, friendly empty-state copy.
+
 ## Key journeys
 
 - J1: A new signed-in user adds their first to-do item and sees it appear in an empty list.
