@@ -11,11 +11,12 @@ export default defineConfig({
   use: { baseURL: `http://localhost:${port}`, trace: "retain-on-failure" },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: {
-    command: `npm run dev -- --port ${port}`,
+    // CI exercises the production build so the production CSP reaches a browser.
+    command: process.env.CI
+      ? `npm run build && npm run start -- --hostname 127.0.0.1 --port ${port}`
+      : `npm run dev -- --hostname 127.0.0.1 --port ${port}`,
     url: `http://localhost:${port}`,
     reuseExistingServer: !process.env.CI,
-    // Tests run against an in-memory database (see ADR 0001); the app reads this once the data layer exists.
-    env: { DB_DRIVER: "pglite" },
     timeout: 120_000,
   },
 });

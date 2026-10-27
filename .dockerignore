@@ -1,5 +1,5 @@
 .git
-node_modules
+**/node_modules
 **/.next
 .ai-sdlc
 .claude
@@ -8,7 +8,9 @@ docs
 e2e
 test-results
 playwright-report
-accounts.local.json
-.env*
+**/accounts.local.json
+**/.env*
 Dockerfile
 .dockerignore
+.vercel
+*.pem

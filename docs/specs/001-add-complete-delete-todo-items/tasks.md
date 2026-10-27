@@ -1,7 +1,7 @@
 Story: #2
 
 - [x] T1: walking skeleton: Next.js app shell, TypeScript, lint, Vitest, Playwright, seed-file ignore rule (adds dependencies, owner approval needed)
-  - paths: package.json, package-lock.json, tsconfig.json, eslint.config.mjs, vitest.config.ts, playwright.config.ts, .gitignore, Dockerfile, .dockerignore, apps/web/next.config.mjs, apps/web/tsconfig.json, apps/web/next-env.d.ts, apps/web/src/app/layout.tsx, apps/web/src/app/page.tsx, apps/web/src/app/globals.css, apps/web/src/**/*.test.ts, e2e/smoke.spec.ts, scripts/check-seed-ignore.test.sh
+  - paths: package.json, package-lock.json, tsconfig.json, eslint.config.mjs, vitest.config.ts, playwright.config.ts, .gitignore, Dockerfile, .dockerignore, apps/web/next.config.mjs, apps/web/tsconfig.json, apps/web/src/app/layout.tsx, apps/web/src/app/page.tsx, apps/web/src/app/globals.css, apps/web/src/**/*.test.ts, e2e/smoke.spec.ts, scripts/check-seed-ignore.test.sh
   - tests: script test that `accounts.local.json` is git-ignored and `accounts.example.json` is not (AC6.6, ignore half); Vitest smoke test; Playwright smoke test that the home page loads and that its response carries the security headers; the Dockerfile is written but not built or run on the build machine (Docker is not installed), so the owner runs `docker build` and `docker run` before the first deploy
   - deps: none
 - [ ] T2: core domain rules: title validation, ordering, ownership rule, IST formatting

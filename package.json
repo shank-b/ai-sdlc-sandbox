@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=22.6"
+    "node": ">=24"
   },
   "scripts": {
     "dev": "next dev apps/web",
@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.64.1",
-    "@types/node": "^26.6.5",
+    "@types/node": "^24",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "eslint": "^9.39.5",
