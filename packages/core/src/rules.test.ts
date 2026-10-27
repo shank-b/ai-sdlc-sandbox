@@ -39,8 +39,8 @@ const todo = fc.record({
   id: fc.uuid(),
   userId: fc.constantFrom("a", "b", "c"),
   title: fc.string({ minLength: 1, maxLength: 20 }),
-  createdAt: fc.date({ min: new Date(0), max: new Date("2100-01-01") }),
-  completedAt: fc.option(fc.date({ min: new Date(0), max: new Date("2100-01-01") }), { nil: null }),
+  createdAt: fc.date({ min: new Date(0), max: new Date("2100-01-01"), noInvalidDate: true }),
+  completedAt: fc.option(fc.date({ min: new Date(0), max: new Date("2100-01-01"), noInvalidDate: true }), { nil: null }),
 });
 
 describe("groupAndOrder properties", () => {
