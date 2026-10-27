@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "jsx": "preserve",
+    "strict": true,
+    "allowJs": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "paths": { "@core/*": ["./packages/core/src/*"] }
+  },
+  "include": ["apps", "packages", "e2e", "db", "*.ts", "*.mjs"],
+  "exclude": ["node_modules", "**/.next", "**/standalone"]
+}

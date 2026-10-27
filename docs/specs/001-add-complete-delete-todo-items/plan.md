@@ -73,7 +73,7 @@ Every `/api/todos` route returns 401 without a valid session. The list page read
 
 ### Security headers and packaging
 
-`next.config.mjs` adds a Content-Security-Policy, `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options` and `Permissions-Policy` to every response, and sets `output: 'standalone'`. A `Dockerfile` and `.dockerignore` build a small runtime image. Ceiling: the CSP still allows inline scripts and styles; a nonce-based policy needs the middleware (an always-human path) and is a follow-up. React already escapes titles (AC1.5), so the headers are defence in depth.
+`apps/web/next.config.mjs` adds a Content-Security-Policy, `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options` and `Permissions-Policy` to every response, and sets `output: 'standalone'`. A `Dockerfile` and `.dockerignore` build a small runtime image. Ceiling: the CSP still allows inline scripts and styles; a nonce-based policy needs the middleware (an always-human path) and is a follow-up. React already escapes titles (AC1.5), so the headers are defence in depth.
 
 ### Error handling and logging
 
@@ -166,7 +166,7 @@ The builder leaves each of these as a `TODO(#2)` comment at the place named, so 
 
 | Where | Comment to leave | Limit |
 | --- | --- | --- |
-| `next.config.mjs`, the CSP header (T1) | `TODO(#2): CSP allows 'unsafe-inline'; move to a per-request nonce in middleware (owner review)` | Inline scripts and styles are allowed |
+| `apps/web/next.config.mjs`, the CSP header (T1) | `TODO(#2): CSP allows 'unsafe-inline'; move to a per-request nonce in middleware (owner review)` | Inline scripts and styles are allowed |
 | `Dockerfile` (T1) | `TODO(#2): image is not built in CI; build and run it locally before deploying` | A broken image shows only at deploy |
 | `db/client.ts`, the `pg` branch (T4) | `TODO(#2): this branch is not exercised in CI (tests use PGlite); run the DATABASE_URL smoke test before deploying` | Pooling, SSL and connection-string mistakes show only in production |
 | `db/seed.ts` (T4) | `TODO(#2): never deletes users removed from accounts.local.json` | Removed names stay in `users` |
