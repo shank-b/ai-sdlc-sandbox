@@ -12,5 +12,8 @@ playwright-report
 **/.env*
 Dockerfile
 .dockerignore
-.vercel
-*.pem
+**/.vercel
+**/*.pem
+**/.terraform
+**/*.tfstate*
+coverage

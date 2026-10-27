@@ -16,6 +16,8 @@ test("home page loads with security headers and no CSP violations", async ({ pag
 
   const h = res!.headers();
   expect(h["content-security-policy"]).toContain("frame-ancestors 'none'");
+  expect(h["content-security-policy"]).toContain("object-src 'none'");
+  if (process.env.CI) expect(h["content-security-policy"]).not.toContain("'unsafe-eval'");
   expect(h["x-content-type-options"]).toBe("nosniff");
   expect(h["x-frame-options"]).toBe("DENY");
   expect(h["referrer-policy"]).toBe("same-origin");
