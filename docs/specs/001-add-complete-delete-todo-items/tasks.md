@@ -4,7 +4,7 @@ Story: #2
   - paths: package.json, package-lock.json, tsconfig.json, eslint.config.mjs, vitest.config.ts, playwright.config.ts, .gitignore, Dockerfile, .dockerignore, apps/web/next.config.mjs, apps/web/tsconfig.json, apps/web/src/app/layout.tsx, apps/web/src/app/page.tsx, apps/web/src/app/globals.css, apps/web/src/**/*.test.ts, e2e/smoke.spec.ts, scripts/check-seed-ignore.test.sh
   - tests: script test that `accounts.local.json` is git-ignored and `accounts.example.json` is not (AC6.6, ignore half); Vitest smoke test; Playwright smoke test that the home page loads and that its response carries the security headers; the Dockerfile is written but not built or run on the build machine (Docker is not installed), so the owner runs `docker build` and `docker run` before the first deploy
   - deps: none
-- [ ] T2: core domain rules: title validation, ordering, ownership rule, IST formatting
+- [x] T2: core domain rules: title validation, ordering, ownership rule, IST formatting
   - paths: packages/core/**
   - tests: unit for validateTitle (AC1.2, AC1.3, AC1.4), formatIst across the UTC/IST midnight boundary (AC1.7), canAccess (AC5.3); property tests for groupAndOrder (AC4.1, AC4.2) and for the per-user filter rule (AC5.2)
   - deps: T1
