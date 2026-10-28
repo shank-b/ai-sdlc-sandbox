@@ -12,7 +12,17 @@ beforeEach(async () => {
   await migrate(db, { migrationsFolder: import.meta.dirname });
 });
 
-const addUser = async (name = "Asha") =>
+// Drizzle wraps the driver error; the Postgres SQLSTATE sits on `cause`.
+const pgCode = async (query: PromiseLike<unknown>) => {
+  try {
+    await query;
+  } catch (e) {
+    return ((e as { cause?: { code?: string } }).cause ?? (e as { code?: string })).code;
+  }
+  return undefined;
+};
+
+const addUser =async (name = "Asha") =>
   (await db.insert(users).values({ name }).returning())[0]!;
 
 describe("migration on an empty in-memory database", () => {
@@ -42,15 +52,15 @@ describe("title check (1 to 140 characters)", () => {
   });
 
   it("rejects the empty title and 141 characters", async () => {
-    await expect(insert("")).rejects.toThrow();
-    await expect(insert("a".repeat(141))).rejects.toThrow();
+    expect(await pgCode(insert(""))).toBe("23514");
+    expect(await pgCode(insert("a".repeat(141)))).toBe("23514");
   });
 });
 
 describe("users", () => {
   it("rejects a duplicate name", async () => {
     await addUser("Asha");
-    await expect(addUser("Asha")).rejects.toThrow();
+    expect(await pgCode(addUser("Asha"))).toBe("23505");
   });
 });
 
@@ -69,8 +79,9 @@ describe("cascade delete", () => {
   });
 
   it("rejects a todo for a user that does not exist", async () => {
-    await expect(
-      db.insert(todos).values({ userId: "00000000-0000-0000-0000-000000000000", title: "x" }),
-    ).rejects.toThrow();
+    const missing = db
+      .insert(todos)
+      .values({ userId: "00000000-0000-0000-0000-000000000000", title: "x" });
+    expect(await pgCode(missing)).toBe("23503");
   });
 });
