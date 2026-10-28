@@ -1,6 +1,7 @@
 node_modules/
 dist/
 .next/
+.next-*/
 # written into the repo by `next dev` / `next build`; not ours to commit
 apps/web/AGENTS.md
 apps/web/next-env.d.ts

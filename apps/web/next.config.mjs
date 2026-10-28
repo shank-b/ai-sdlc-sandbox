@@ -20,6 +20,7 @@ const csp = [
 /** @type {import('next').NextConfig} */
 const config = {
   output: "standalone",
+  distDir: process.env.NEXT_DIST_DIR ?? ".next",
   outputFileTracingRoot: repoRoot,
   poweredByHeader: false,
   async headers() {

@@ -16,7 +16,7 @@ Story: #2
   - paths: db/client.ts, db/seed.ts, accounts.example.json, apps/web/src/data/**, apps/web/src/instrumentation.ts, package.json
   - tests: integration tests on in-memory PGlite that every data function returns or changes only the caller's rows (AC5.2, AC5.3); one smoke test of the same data layer against real Postgres, skipped unless `DATABASE_URL` is set; seed test that the example file produces exactly Asha and Ben and a missing file produces no users (AC6.6, example half)
   - deps: T2, T3
-- [ ] T5: sign-in, session and middleware (always-human path auth/)
+- [x] T5: sign-in, session and middleware (always-human path auth/)
   - paths: apps/web/src/auth/**, apps/web/src/app/auth/**, apps/web/src/middleware.ts, e2e/support/**, e2e/auth/**
   - tests: unit for cookie sign, verify, tamper and expiry; log-content test (AC5.5); Playwright for AC5.4 (page redirect), AC6.1, AC6.2, AC6.3, AC6.4, AC6.5
   - deps: T1, T4
