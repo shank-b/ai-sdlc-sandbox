@@ -56,6 +56,10 @@ describe("sign and verify", () => {
     expect(await verifySession(v, secret, expiresAt + 1)).toBeNull();
   });
 
+  it.each(["a", "abcde", "a=b", "é"])("returns null, not a throw, for the odd-length or invalid signature %j", async (sig) => {
+    await expect(verifySession(`${uid}.1900000000.${sig}`, secret, now)).resolves.toBeNull();
+  });
+
   it.each([undefined, null, "", "x", "a.b", "a.b.c.d", "..", `${uid}.notanumber.sig`])("rejects malformed value %j", async (v) => {
     expect(await verifySession(v, secret, now)).toBeNull();
   });
@@ -67,6 +71,12 @@ describe("cookie header", () => {
     expect(await userIdFromCookieHeader(`a=1; session=${v}; b=2`, secret, now)).toBe(uid);
     expect(await userIdFromCookieHeader("a=1", secret, now)).toBeNull();
     expect(await userIdFromCookieHeader(null, secret, now)).toBeNull();
+  });
+
+  it("tries later session cookies when an earlier one is invalid", async () => {
+    const v = await signSession(uid, secret, now);
+    expect(await userIdFromCookieHeader(`session=forged; session=${v}`, secret, now)).toBe(uid);
+    expect(await userIdFromCookieHeader(`session=a; session=b`, secret, now)).toBeNull();
   });
 
   it("sets HttpOnly, SameSite=Lax, a 7-day Max-Age, Path=/, and Secure only when asked", () => {

@@ -15,8 +15,11 @@ const toB64Url = (buf: ArrayBuffer) =>
 
 const fromB64Url = (s: string): Uint8Array<ArrayBuffer> | null => {
   if (!/^[A-Za-z0-9_-]+$/.test(s)) return null;
-  const bin = atob(s.replace(/-/g, "+").replace(/_/g, "/"));
-  return Uint8Array.from(bin, (c) => c.charCodeAt(0));
+  try {
+    return Uint8Array.from(atob(s.replace(/-/g, "+").replace(/_/g, "/")), (c) => c.charCodeAt(0));
+  } catch {
+    return null; // e.g. a length of 1 mod 4
+  }
 };
 
 const key = (secret: string, usage: "sign" | "verify") =>
@@ -54,7 +57,10 @@ export async function userIdFromCookieHeader(header: string | null | undefined, 
   if (!header) return null;
   for (const part of header.split(";")) {
     const i = part.indexOf("=");
-    if (i > 0 && part.slice(0, i).trim() === SESSION_COOKIE) return verifySession(part.slice(i + 1).trim(), secret, nowMs);
+    if (i <= 0 || part.slice(0, i).trim() !== SESSION_COOKIE) continue;
+    // a stale duplicate must not hide a valid cookie, so try them all
+    const userId = await verifySession(part.slice(i + 1).trim(), secret, nowMs);
+    if (userId) return userId;
   }
   return null;
 }

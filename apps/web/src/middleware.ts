@@ -10,6 +10,6 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  // everything except the sign-in page, the session route and Next's static assets
-  matcher: ["/((?!auth/signin|auth/session|_next/|favicon\\.ico).*)"],
+  // everything except the sign-in page, the session route, the icons and Next's static assets
+  matcher: ["/((?!auth/signin|auth/session|_next/|favicon\\.ico|icon\\.svg).*)"],
 };

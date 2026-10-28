@@ -53,3 +53,41 @@ test("the session cookie is HttpOnly and SameSite=Lax", async ({ page, context }
   expect(cookie.httpOnly).toBe(true);
   expect(cookie.sameSite).toBe("Lax");
 });
+
+test("a failed sign-out says so, keeps the user on the list, and the session still works", async ({ page }) => {
+  await signInAs(page, "Asha");
+  await page.route("**/auth/session", (route) => route.fulfill({ status: 403, json: { error: "forbidden" } }));
+  await page.getByRole("button", { name: "Sign out" }).click();
+  await expect(page.getByRole("main").getByRole("alert")).toHaveText("Couldn't sign out. Try again.");
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.getByText("Signed in as Asha")).toBeVisible();
+});
+
+test("sign-in sends one request however fast the buttons are clicked", async ({ page }) => {
+  let posts = 0;
+  await page.route("**/auth/session", async (route) => {
+    posts++;
+    await new Promise((r) => setTimeout(r, 500));
+    await route.continue();
+  });
+  await page.goto("/auth/signin");
+  const asha = page.getByRole("button", { name: "Continue as Asha" });
+  await asha.click();
+  await expect(asha).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Continue as Ben" })).toBeDisabled();
+  await expect(page.getByText("Signed in as Asha")).toBeVisible();
+  expect(posts).toBe(1);
+});
+
+test("a signed-out visitor gets the icon, not a redirect to sign-in", async ({ request }) => {
+  const res = await request.get("/icon.svg", { maxRedirects: 0 });
+  expect(res.status()).toBe(200);
+  expect(res.headers()["content-type"]).toContain("image/svg+xml");
+});
+
+test("a cookie with an odd-length signature is treated as no session, not a server error", async ({ page, context, baseURL }) => {
+  await context.addCookies([{ name: "session", value: "3f2b8f0e-1c3d-4a5b-9c7d-0123456789ab.9999999999.a", url: baseURL! }]);
+  const res = await page.goto("/");
+  expect(res?.status()).toBe(200);
+  await expect(page).toHaveURL(/\/auth\/signin$/);
+});
