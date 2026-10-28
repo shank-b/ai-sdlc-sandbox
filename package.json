@@ -15,7 +15,8 @@
     "test": "vitest run",
     "e2e": "playwright test",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate"
+    "db:migrate": "drizzle-kit migrate",
+    "seed": "node --experimental-strip-types db/seed.ts"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.4",
