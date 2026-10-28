@@ -17,6 +17,13 @@ describe("validateTitle", () => {
   });
 });
 
+describe("validateTitle code points (AC1.4)", () => {
+  it("counts emoji as one character, like Postgres char_length", () => {
+    expect(validateTitle("😀".repeat(140))).toEqual({ ok: true, title: "😀".repeat(140) });
+    expect(validateTitle("😀".repeat(141))).toEqual({ ok: false, error: "title_too_long" });
+  });
+});
+
 describe("formatIst", () => {
   it("formats in en-IN, IST (AC1.7)", () => {
     expect(formatIst(new Date("2026-10-22T13:42:00Z"))).toBe("22 Oct 2026, 7:12 pm IST");
@@ -32,6 +39,7 @@ describe("canAccess", () => {
     expect(canAccess("a", "a")).toBe(true);
     expect(canAccess("a", "b")).toBe(false);
     expect(canAccess("a", "")).toBe(false);
+    expect(canAccess("", "")).toBe(false);
   });
 });
 
@@ -58,6 +66,15 @@ describe("groupAndOrder properties", () => {
       for (let i = 1; i < open.length; i++) expect(open[i - 1].createdAt.getTime()).toBeGreaterThanOrEqual(open[i].createdAt.getTime());
       for (let i = 1; i < completed.length; i++) expect(completed[i - 1].completedAt!.getTime()).toBeGreaterThanOrEqual(completed[i].completedAt!.getTime());
     }));
+  });
+  it("breaks ties by id, whatever the input order (AC4.2)", () => {
+    const d = new Date("2026-01-01T00:00:00Z");
+    const mk = (id: string, completedAt: Date | null): Todo => ({ id, userId: "a", title: "t", createdAt: d, completedAt });
+    for (const completedAt of [null, d]) {
+      const items = ["c", "a", "b"].map((id) => mk(id, completedAt));
+      const g = (xs: Todo[]) => groupAndOrder(xs)[completedAt ? "completed" : "open"].map((t) => t.id);
+      expect(g(items)).toEqual(g([...items].reverse()));
+    }
   });
   it("does not mutate its input", () => {
     fc.assert(fc.property(fc.array(todo), (items) => {
