@@ -12,7 +12,8 @@
     "isolatedModules": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
-    "paths": { "@core/*": ["./packages/core/src/*"] }
+    "allowImportingTsExtensions": true,
+    "paths": { "@core/*": ["./packages/core/src/*"], "@db/*": ["./db/*"] }
   },
   "include": ["apps", "packages", "e2e", "db", "*.ts", "*.mjs"],
   "exclude": ["node_modules", "**/.next", "**/standalone"]

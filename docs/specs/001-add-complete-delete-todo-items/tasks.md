@@ -12,7 +12,7 @@ Story: #2
   - paths: db/schema.ts, db/migrations/**, drizzle.config.ts, package.json
   - tests: migration applies to an empty in-memory PGlite database and the schema test checks the 1 to 140 title check, the unique user name and cascade delete
   - deps: T1
-- [ ] T4: data access layer scoped by user, driver switch (PGlite or pg), start-up seeding and the seed command
+- [x] T4: data access layer scoped by user, driver switch (PGlite or pg), start-up seeding and the seed command
   - paths: db/client.ts, db/seed.ts, accounts.example.json, apps/web/src/data/**, apps/web/src/instrumentation.ts, package.json
   - tests: integration tests on in-memory PGlite that every data function returns or changes only the caller's rows (AC5.2, AC5.3); one smoke test of the same data layer against real Postgres, skipped unless `DATABASE_URL` is set; seed test that the example file produces exactly Asha and Ben and a missing file produces no users (AC6.6, example half)
   - deps: T2, T3
