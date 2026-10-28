@@ -8,7 +8,7 @@ Story: #2
   - paths: packages/core/**
   - tests: unit for validateTitle (AC1.2, AC1.3, AC1.4), formatIst across the UTC/IST midnight boundary (AC1.7), canAccess (AC5.3); property tests for groupAndOrder (AC4.1, AC4.2) and for the per-user filter rule (AC5.2)
   - deps: T1
-- [ ] T3: database schema and first migration (data-model change, always-human path db/migrations/**, adds dependencies drizzle-orm, drizzle-kit, pg, @electric-sql/pglite)
+- [x] T3: database schema and first migration (data-model change, always-human path db/migrations/**, adds dependencies drizzle-orm, drizzle-kit, pg, @electric-sql/pglite)
   - paths: db/schema.ts, db/migrations/**, drizzle.config.ts, package.json
   - tests: migration applies to an empty in-memory PGlite database and the schema test checks the 1 to 140 title check, the unique user name and cascade delete
   - deps: T1
