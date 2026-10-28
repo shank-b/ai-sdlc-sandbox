@@ -1,7 +1,7 @@
 import { mkdtemp, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { execFileSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import { beforeEach, describe, expect, it } from "vitest";
 import { createPgliteDb, type Db } from "./client";
 import { readAccounts, seedUsers } from "./seed";
@@ -52,8 +52,22 @@ describe("seeding from the example file (AC6.6, example half)", () => {
 });
 
 describe("the seed command", () => {
-  it("is exposed as npm run seed and loads under Node's type stripping", () => {
-    const pkg = JSON.parse(execFileSync("node", ["-p", "JSON.stringify(require('./package.json').scripts)"], { cwd: root }).toString());
-    expect(pkg.seed).toContain("db/seed.ts");
+  const run = (env: Record<string, string>) =>
+    spawnSync("npm", ["run", "--silent", "seed", "--", path.join(root, "accounts.example.json")], {
+      cwd: root,
+      encoding: "utf8",
+      env: { ...process.env, DATABASE_URL: "", DB_DRIVER: "", ...env },
+    });
+
+  it("runs under Node's type stripping and reports what it seeded", () => {
+    const r = run({ DB_DRIVER: "pglite" });
+    expect(r.status).toBe(0);
+    expect(r.stdout).toContain("Seeded 2 account(s)");
+  }, 30_000);
+
+  it("exits non-zero with a clear message when no database is configured", () => {
+    const r = run({});
+    expect(r.status).toBe(1);
+    expect(r.stderr).toContain("DATABASE_URL is not set");
   });
 });

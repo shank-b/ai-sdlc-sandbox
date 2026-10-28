@@ -25,6 +25,8 @@ export async function createPgliteDb(): Promise<Handle> {
 export function createPgDb(url: string): Handle {
   // TODO(#2): this branch is not exercised in CI (tests use PGlite); run the DATABASE_URL smoke test before deploying
   const pool = new pg.Pool({ connectionString: url });
+  // an error on an idle connection (e.g. the host restarting) would otherwise crash the process
+  pool.on("error", (e) => console.error(`database pool error: ${e.name}`));
   return { db: drizzlePg(pool, { schema }), close: () => pool.end() };
 }
 
@@ -39,6 +41,10 @@ const shared = globalThis as { __db?: Promise<Handle> };
 
 /** One handle per server process, kept across dev hot reloads. */
 export function getDb(): Promise<Db> {
-  shared.__db ??= createDb();
-  return shared.__db.then((h) => h.db);
+  const handle = (shared.__db ??= createDb());
+  // a failed start-up must not be cached, or every later call would fail the same way
+  handle.catch(() => {
+    if (shared.__db === handle) delete shared.__db;
+  });
+  return handle.then((h) => h.db);
 }

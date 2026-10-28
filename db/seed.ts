@@ -1,4 +1,5 @@
 import { readFile } from "node:fs/promises";
+import { pathToFileURL } from "node:url";
 import { createDb, type Db } from "./client.ts";
 import { users } from "./schema.ts";
 
@@ -37,7 +38,7 @@ async function main() {
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   main().catch((e) => {
     console.error(e instanceof Error ? e.message : e);
     process.exit(1);
