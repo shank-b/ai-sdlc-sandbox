@@ -4,7 +4,7 @@ Story: #2
 
 ## Status
 
-Proposed (needs owner approval at G2: it adds dependencies).
+Accepted (owner approved the dependency list at G2 and the T3 migration and dependencies in PR #23).
 
 ## Context
 
