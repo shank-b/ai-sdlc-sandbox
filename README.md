@@ -22,6 +22,16 @@ GitHub template for projects run with the [ai-sdlc](https://github.com/shank-b/a
 | `docs/` | `constitution.md` (G0), `prd/`, `specs/<NNN-feature>/`, `adr/` |
 | `scripts/deploy.sh` | Deploy entry point called by `deploy.yml`; fill in per hosting profile |
 
+## Running the app locally
+
+The app needs a `SESSION_SECRET` (at least 32 characters) to sign session cookies. Set it in your shell, never in the repo. For an in-memory database seeded with the example accounts (Asha and Ben):
+
+```
+SESSION_SECRET=<32+ random characters> DB_DRIVER=pglite npm run dev
+```
+
+Against a real Postgres, set `DATABASE_URL` instead of `DB_DRIVER`, run `npm run db:migrate`, then `npm run seed` (reads `accounts.local.json`, which is git-ignored; see `accounts.example.json`).
+
 ## Secrets and variables
 
 | Name | Where | Why |

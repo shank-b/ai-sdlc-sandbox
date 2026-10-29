@@ -22,3 +22,31 @@ body {
   outline: 3px solid var(--text);
   outline-offset: 2px;
 }
+
+button {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0.5rem 0.875rem;
+  font: inherit;
+}
+
+.accounts {
+  list-style: none;
+  padding: 0;
+}
+
+.accounts li {
+  margin-bottom: 0.5rem;
+}
+
+.session {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+[role="alert"] {
+  border: 2px solid var(--text);
+  padding: 0.5rem 0.75rem;
+}

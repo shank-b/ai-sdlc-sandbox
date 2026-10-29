@@ -5,7 +5,7 @@ const config = [
   ...coreWebVitals,
   ...typescript,
   { settings: { next: { rootDir: "apps/web" } } },
-  { ignores: ["**/.next/**", "**/standalone/**", "node_modules/**", "playwright-report/**", "test-results/**"] },
+  { ignores: ["**/.next/**", "**/.next-*/**", "**/standalone/**", "node_modules/**", "playwright-report/**", "test-results/**"] },
 ];
 
 export default config;
