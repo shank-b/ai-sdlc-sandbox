@@ -43,6 +43,7 @@ describe("middleware (AC5.4)", () => {
   it("matcher skips the sign-in page, the session route, the icons and static assets, and covers everything else", () => {
     const re = new RegExp(`^${config.matcher[0]}$`);
     for (const open of ["/auth/signin", "/auth/session", "/_next/static/x.js", "/favicon.ico", "/icon.svg"]) expect(re.test(open), open).toBe(false);
-    for (const guarded of ["/", "/api/todos", "/api/todos/1", "/auth/other"]) expect(re.test(guarded), guarded).toBe(true);
+    for (const open of ["/auth/signin/", "/auth/session/x"]) expect(re.test(open), open).toBe(false);
+    for (const guarded of ["/", "/api/todos", "/api/todos/1", "/auth/other", "/auth/signin-anything", "/auth/sessionfoo", "/icon.svg.map", "/favicon.icon"]) expect(re.test(guarded), guarded).toBe(true);
   });
 });

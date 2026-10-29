@@ -20,7 +20,7 @@ Story: #2
   - paths: apps/web/src/auth/**, apps/web/src/app/auth/**, apps/web/src/middleware.ts, e2e/support/**, e2e/auth/**
   - tests: unit for cookie sign, verify, tamper and expiry; log-content test (AC5.5); Playwright for AC5.4 (page redirect), AC6.1, AC6.2, AC6.3, AC6.4, AC6.5
   - deps: T1, T4
-- [ ] T6: item API: add, complete and un-complete, delete
+- [x] T6: item API: add, complete and un-complete, delete
   - paths: apps/web/src/app/api/todos/**
   - tests: API tests on in-memory PGlite for AC1.4 (400), AC2.3, AC3.2, AC5.3 (A uses B's id, gets 404, row unchanged), AC5.4 (401 without a cookie) and AC5.5 (no cookie or secret values in logs); Origin check test
   - deps: T2, T4, T5

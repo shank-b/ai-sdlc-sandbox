@@ -1,4 +1,4 @@
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, sql } from "drizzle-orm";
 import type { Db } from "@db/client";
 import { todos, users } from "@db/schema";
 
@@ -30,12 +30,15 @@ export async function addTodo(db: Db, userId: string, title: string): Promise<To
   return (await db.insert(todos).values({ userId, title }).returning())[0]!;
 }
 
-/** Returns null when the item doesn't exist or isn't the caller's. */
+/**
+ * Returns null when the item doesn't exist or isn't the caller's. Completing an item that is
+ * already complete keeps its original completion time (a retry must not reorder the list).
+ */
 export async function setCompleted(db: Db, userId: string, id: string, completed: boolean): Promise<Todo | null> {
   if (!isUuid(userId) || !isUuid(id)) return null;
   const rows = await db
     .update(todos)
-    .set({ completedAt: completed ? new Date() : null })
+    .set({ completedAt: completed ? sql`coalesce(${todos.completedAt}, now())` : null })
     .where(and(eq(todos.id, id), eq(todos.userId, userId)))
     .returning();
   return rows[0] ?? null;

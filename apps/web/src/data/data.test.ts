@@ -42,6 +42,16 @@ describe("scoped item functions", () => {
     expect(open!.completedAt).toBeNull();
   });
 
+  it("completing an already-completed item keeps the original completion time", async () => {
+    const a = await mkUser("Asha");
+    const t = await addTodo(db, a.id, "x");
+    const first = (await setCompleted(db, a.id, t.id, true))!;
+    await new Promise((r) => setTimeout(r, 20));
+    const again = (await setCompleted(db, a.id, t.id, true))!;
+    expect(again.completedAt).toEqual(first.completedAt);
+    expect((await listTodos(db, a.id))[0]!.completedAt).toEqual(first.completedAt);
+  });
+
   it("deletes", async () => {
     const a = await mkUser("Asha");
     const t = await addTodo(db, a.id, "x");
