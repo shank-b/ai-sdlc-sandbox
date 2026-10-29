@@ -19,8 +19,8 @@ export function validateTitle(raw: string): TitleResult {
 }
 
 /** Open items newest first; completed items most recently completed first. Ties break by id. */
-export function groupAndOrder(items: readonly Todo[]): { open: Todo[]; completed: Todo[] } {
-  const byId = (a: Todo, b: Todo) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+export function groupAndOrder<T extends Pick<Todo, "id" | "createdAt" | "completedAt">>(items: readonly T[]): { open: T[]; completed: T[] } {
+  const byId = (a: T, b: T) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
   const open = items.filter((t) => t.completedAt === null).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime() || byId(a, b));
   const completed = items.filter((t) => t.completedAt !== null).sort((a, b) => b.completedAt!.getTime() - a.completedAt!.getTime() || byId(a, b));
   return { open, completed };
