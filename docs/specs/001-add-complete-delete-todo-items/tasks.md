@@ -28,7 +28,7 @@ Story: #2
   - paths: apps/web/src/components/list/**, apps/web/src/app/page.tsx, apps/web/src/app/globals.css, e2e/list/**
   - tests: Playwright for AC1.1, AC1.2, AC1.4, AC1.5, AC1.6, AC1.7, AC1.8, AC2.1, AC2.2, AC2.3, AC2.4, AC2.5, AC4.1, AC4.3, AC7.3
   - deps: T6
-- [ ] T8: delete confirmation dialog
+- [x] T8: delete confirmation dialog
   - paths: apps/web/src/components/delete-dialog/**, e2e/delete/**
   - tests: Playwright for AC3.1, AC3.2, AC3.3, AC3.4, AC3.5
   - deps: T7

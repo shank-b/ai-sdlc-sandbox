@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, type FormEvent } from "react";
+import { DeleteDialog } from "../delete-dialog/delete-dialog";
 import { MAX_TITLE_LENGTH, formatIst, groupAndOrder, validateTitle } from "@core/rules";
 
 // TODO(#2): green accent from the visual direction is left to hi-fi
@@ -30,6 +31,7 @@ export function TodoList({ initial }: { initial: TodoView[] }) {
   const [titleError, setTitleError] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
   const [failure, setFailure] = useState<{ retry: () => void } | null>(null);
+  const [confirming, setConfirming] = useState<{ id: string; title: string } | null>(null);
   const addingRef = useRef(false);
   const pending = useRef(new Set<string>());
   const field = useRef<HTMLInputElement>(null);
@@ -103,6 +105,29 @@ export function TodoList({ initial }: { initial: TodoView[] }) {
     }
   }
 
+  function closeDialog(id: string) {
+    setConfirming(null);
+    // the dialog is gone, so hand focus back to the row's Delete button (if the row survives)
+    requestAnimationFrame(() => document.querySelector<HTMLElement>(`li[data-id="${id}"] button.delete`)?.focus());
+  }
+
+  async function remove(id: string) {
+    if (pending.current.has(id)) return;
+    pending.current.add(id);
+    setFailure(null);
+    try {
+      const res = await send(`/api/todos/${id}`, "DELETE");
+      // 404: already gone (another tab), which is the state the user asked for
+      if (res?.status === 204 || res?.status === 404) {
+        setItems((prev) => prev.filter((t) => t.id !== id));
+        return;
+      }
+      setFailure({ retry: () => void remove(id) });
+    } finally {
+      pending.current.delete(id);
+    }
+  }
+
   const row = (t: (typeof view.open)[number]) => {
     const done = t.completedAt !== null;
     return (
@@ -121,8 +146,7 @@ export function TodoList({ initial }: { initial: TodoView[] }) {
             </small>
           </span>
         </label>
-        {/* the confirmation dialog and the delete itself arrive in T8 */}
-        <button type="button" className="delete" aria-label={`Delete ${t.title}`}>
+        <button type="button" className="delete" aria-label={`Delete ${t.title}`} onClick={() => setConfirming({ id: t.id, title: t.title })}>
           Delete
         </button>
       </li>
@@ -176,6 +200,16 @@ export function TodoList({ initial }: { initial: TodoView[] }) {
           <h2>Completed ({view.completed.length})</h2>
           <ul>{view.completed.map(row)}</ul>
         </section>
+      )}
+      {confirming && (
+        <DeleteDialog
+          title={confirming.title}
+          onCancel={() => closeDialog(confirming.id)}
+          onConfirm={() => {
+            closeDialog(confirming.id);
+            void remove(confirming.id);
+          }}
+        />
       )}
     </div>
   );
