@@ -10,11 +10,12 @@ export const dynamic = "force-dynamic";
 
 export default async function Home() {
   // middleware already checked the signature; look the user up too (defence in depth)
+  const db = await getDb();
   const userId = await verifySession((await cookies()).get(SESSION_COOKIE)?.value, sessionSecret());
-  const user = userId ? await getUser(await getDb(), userId) : null;
+  const user = userId ? await getUser(db, userId) : null;
   if (!user) redirect("/auth/signin");
 
-  const todos = (await listTodos(await getDb(), user.id)).map((t) => ({
+  const todos = (await listTodos(db, user.id)).map((t) => ({
     id: t.id,
     title: t.title,
     createdAt: t.createdAt.toISOString(),

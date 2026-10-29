@@ -1,8 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
 import { signInAs } from "../support/session";
 
-// Each test signs in as a different throwaway title prefix; the database is shared across the run,
-// so tests only assert on the items they create.
+// The database is shared across the run and this file's tests run serially, so tests assert only on
+// the items they create (AC1.6 empties Ben's list first).
 const add = async (page: Page, title: string) => {
   await page.getByLabel("New to-do").fill(title);
   await page.getByRole("button", { name: "Add", exact: true }).click();

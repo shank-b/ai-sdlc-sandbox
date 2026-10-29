@@ -30,6 +30,7 @@ export function TodoList({ initial }: { initial: TodoView[] }) {
   const [titleError, setTitleError] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
   const [failure, setFailure] = useState<{ retry: () => void } | null>(null);
+  const addingRef = useRef(false);
   const pending = useRef(new Set<string>());
   const field = useRef<HTMLInputElement>(null);
 
@@ -38,6 +39,7 @@ export function TodoList({ initial }: { initial: TodoView[] }) {
   );
 
   async function add(raw: string) {
+    if (addingRef.current) return;
     setFailure(null);
     const checked = validateTitle(raw);
     if (!checked.ok) {
@@ -46,14 +48,18 @@ export function TodoList({ initial }: { initial: TodoView[] }) {
       return;
     }
     setTitleError(null);
+    addingRef.current = true;
     setAdding(true);
     const res = await send("/api/todos", "POST", { title: checked.title });
+    addingRef.current = false;
     setAdding(false);
     if (res?.status === 201) {
-      const created: TodoView = await res.json();
-      setItems((prev) => [...prev, created]);
-      setTitle("");
-      return;
+      const created: TodoView | null = await res.json().catch(() => null);
+      if (created) {
+        setItems((prev) => [...prev, created]);
+        setTitle("");
+        return;
+      }
     }
     if (res?.status === 400) {
       const { error } = await res.json().catch(() => ({ error: "" }));
@@ -63,31 +69,38 @@ export function TodoList({ initial }: { initial: TodoView[] }) {
         return;
       }
     }
-    setFailure({ retry: () => void add(raw) });
+    setFailure({ retry: () => void add(field.current?.value ?? raw) });
   }
 
   function onSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!adding) void add(title);
+    void add(title);
   }
 
   async function toggle(id: string, completed: boolean) {
-    if (pending.current.has(id)) return;
+    const before = items.find((t) => t.id === id);
+    if (!before || pending.current.has(id)) return;
     pending.current.add(id);
     setFailure(null);
-    const before = items.find((t) => t.id === id);
-    if (!before) return;
     // optimistic: show the new state now, roll back if the save fails
     setItems((prev) => prev.map((t) => (t.id === id ? { ...t, completedAt: completed ? new Date().toISOString() : null } : t)));
-    const res = await send(`/api/todos/${id}`, "PATCH", { completed });
-    pending.current.delete(id);
-    if (res?.ok) {
-      const saved: TodoView = await res.json();
-      setItems((prev) => prev.map((t) => (t.id === id ? saved : t)));
-      return;
+    try {
+      const res = await send(`/api/todos/${id}`, "PATCH", { completed });
+      if (res?.status === 404) {
+        // gone elsewhere (another tab); retrying can't help, so drop the row
+        setItems((prev) => prev.filter((t) => t.id !== id));
+        return;
+      }
+      const saved: TodoView | null = res?.ok ? await res.json().catch(() => null) : null;
+      if (saved) {
+        setItems((prev) => prev.map((t) => (t.id === id ? saved : t)));
+        return;
+      }
+      setItems((prev) => prev.map((t) => (t.id === id ? before : t)));
+      setFailure({ retry: () => void toggle(id, completed) });
+    } finally {
+      pending.current.delete(id);
     }
-    setItems((prev) => prev.map((t) => (t.id === id ? before : t)));
-    setFailure({ retry: () => void toggle(id, completed) });
   }
 
   const row = (t: (typeof view.open)[number]) => {
@@ -117,7 +130,7 @@ export function TodoList({ initial }: { initial: TodoView[] }) {
   };
 
   return (
-    <>
+    <div className="list">
       <form className="add" onSubmit={onSubmit} noValidate>
         <label htmlFor="new-todo">New to-do</label>
         <input
@@ -164,6 +177,6 @@ export function TodoList({ initial }: { initial: TodoView[] }) {
           <ul>{view.completed.map(row)}</ul>
         </section>
       )}
-    </>
+    </div>
   );
 }
