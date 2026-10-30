@@ -82,8 +82,6 @@ jobs:
             --max-turns 20
             --mcp-config .mcp.json
             --allowedTools "Task,Read,Grep,Glob,mcp__github,Bash(gh pr comment:*)"
-          # Temporary: the agent's output is hidden by default and this review has never posted a comment. Remove once it does.
-          show_full_output: true
       - name: Fail if the review did not run
         if: always() && steps.review.outputs.conclusion != 'success'
         run: |
