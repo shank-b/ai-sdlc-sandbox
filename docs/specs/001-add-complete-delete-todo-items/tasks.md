@@ -24,7 +24,7 @@ Story: #2
   - paths: apps/web/src/app/api/todos/**
   - tests: API tests on in-memory PGlite for AC1.4 (400), AC2.3, AC3.2, AC5.3 (A uses B's id, gets 404, row unchanged), AC5.4 (401 without a cookie) and AC5.5 (no cookie or secret values in logs); Origin check test
   - deps: T2, T4, T5
-- [ ] T7: list screen: add form, rows, complete toggle, empty state, ordering
+- [x] T7: list screen: add form, rows, complete toggle, empty state, ordering
   - paths: apps/web/src/components/list/**, apps/web/src/app/page.tsx, apps/web/src/app/globals.css, e2e/list/**
   - tests: Playwright for AC1.1, AC1.2, AC1.4, AC1.5, AC1.6, AC1.7, AC1.8, AC2.1, AC2.2, AC2.3, AC2.4, AC2.5, AC4.1, AC4.3, AC7.3
   - deps: T6
