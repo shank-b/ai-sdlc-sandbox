@@ -151,3 +151,33 @@ button.delete {
   text-decoration: underline;
   cursor: pointer;
 }
+
+dialog.confirm {
+  max-width: 360px;
+  padding: 16px;
+  border: 2px solid var(--text);
+  border-radius: 6px;
+  background: var(--bg, #fff);
+  color: var(--text);
+}
+
+dialog.confirm::backdrop {
+  background: rgba(0, 0, 0, 0.55);
+}
+
+dialog.confirm .actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+dialog.confirm button {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+dialog.confirm button.danger {
+  background: var(--text);
+  color: var(--bg);
+  font-weight: 700;
+}
