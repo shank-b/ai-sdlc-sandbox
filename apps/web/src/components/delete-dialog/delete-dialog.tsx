@@ -11,7 +11,7 @@ export function DeleteDialog({ title, onCancel, onConfirm }: { title: string; on
   useEffect(() => {
     const el = dialog.current;
     if (!el) return;
-    el.showModal();
+    if (!el.open) el.showModal();
     cancel.current?.focus(); // the safe choice is the default
   }, []);
 

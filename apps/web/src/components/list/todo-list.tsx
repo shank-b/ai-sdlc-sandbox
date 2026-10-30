@@ -105,14 +105,20 @@ export function TodoList({ initial }: { initial: TodoView[] }) {
     }
   }
 
-  function closeDialog(id: string) {
+  function closeDialog(id: string, confirmed = false) {
     setConfirming(null);
-    // the dialog is gone, so hand focus back to the row's Delete button (if the row survives)
-    requestAnimationFrame(() => document.querySelector<HTMLElement>(`li[data-id="${id}"] button.delete`)?.focus());
+    // hand focus back to the row's Delete button; once confirmed the row is going, so use the add field
+    requestAnimationFrame(() =>
+      confirmed ? field.current?.focus() : document.querySelector<HTMLElement>(`li[data-id="${id}"] button.delete`)?.focus(),
+    );
   }
 
   async function remove(id: string) {
-    if (pending.current.has(id)) return;
+    if (pending.current.has(id)) {
+      // a save for this row is still in flight; say so rather than dropping the confirmed delete
+      setFailure({ retry: () => void remove(id) });
+      return;
+    }
     pending.current.add(id);
     setFailure(null);
     try {
@@ -206,7 +212,7 @@ export function TodoList({ initial }: { initial: TodoView[] }) {
           title={confirming.title}
           onCancel={() => closeDialog(confirming.id)}
           onConfirm={() => {
-            closeDialog(confirming.id);
+            closeDialog(confirming.id, true);
             void remove(confirming.id);
           }}
         />

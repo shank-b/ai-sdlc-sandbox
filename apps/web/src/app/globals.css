@@ -178,6 +178,6 @@ dialog.confirm button {
 
 dialog.confirm button.danger {
   background: var(--text);
-  color: #fff;
+  color: var(--bg);
   font-weight: 700;
 }
