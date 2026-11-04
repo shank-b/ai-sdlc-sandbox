@@ -82,6 +82,8 @@ jobs:
             --max-turns 20
             --mcp-config .mcp.json
             --allowedTools "Task,Read,Grep,Glob,mcp__github,Bash(gh pr comment:*)"
+          # Temporary: PR 33 ran with 2 permission denials and posted nothing; the log does not say which calls. Remove once found.
+          show_full_output: true
       - name: Fail if the review did not run
         if: always() && steps.review.outputs.conclusion != 'success'
         run: |
