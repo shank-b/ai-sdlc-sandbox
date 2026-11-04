@@ -32,6 +32,22 @@ SESSION_SECRET=<32+ random characters> DB_DRIVER=pglite npm run dev
 
 Against a real Postgres, set `DATABASE_URL` instead of `DB_DRIVER`, run `npm run db:migrate`, then `npm run seed` (reads `accounts.local.json`, which is git-ignored; see `accounts.example.json`).
 
+## Deploying locally
+
+This sandbox deploys to your own machine. `scripts/deploy.sh` builds a git ref (a branch, a tag, a commit) into a Next.js standalone release and runs it with node on `127.0.0.1`; staging is port 3200, production is port 3300. No Docker is needed.
+
+```
+scripts/deploy.sh staging main            # build and switch to it; restores the old release if the new one fails its health check
+scripts/deploy.sh production v0.1.0
+scripts/deploy.sh rollback production     # back to the previous release
+scripts/deploy.sh status production
+scripts/deploy.sh stop production
+```
+
+State (releases, pid, log, and a generated `SESSION_SECRET`) lives in `~/.local/share/ai-sdlc-deploy/<repo>`, outside the repo. The database is in-memory and seeded from `accounts.example.json`, so data resets on every restart; set `DATABASE_URL` to use a real Postgres. The health check is `/auth/signin`.
+
+`deploy.yml` runs the same script on the Actions runner. There the app only lives for the job (build, boot, health check), so a tagged release exercises gate G4 without leaving anything running. To check the live copy, run `scripts/deploy.sh production <tag>` on your machine, then `/ai-sdlc:canary http://127.0.0.1:3300` in Claude Desktop. Run `deploy.sh` from your terminal, not from an agent session: the guard hook blocks production deploys there.
+
 ## Secrets and variables
 
 | Name | Where | Why |
