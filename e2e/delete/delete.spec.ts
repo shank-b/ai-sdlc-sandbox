@@ -1,12 +1,7 @@
-import { expect, test, type Page } from "@playwright/test";
-import { signInAs } from "../support/session";
+import { expect, test } from "@playwright/test";
+import { addItem as add, signInAs } from "../support/session";
 
 // The database is shared across the run, so each test creates and asserts on its own item.
-const add = async (page: Page, title: string) => {
-  await page.getByLabel("New to-do").fill(title);
-  await page.getByRole("button", { name: "Add", exact: true }).click();
-  await expect(page.getByText(title, { exact: true })).toBeVisible();
-};
 
 test("AC3.1: Delete opens a dialog naming the item with Cancel and Delete", async ({ page }) => {
   await signInAs(page, "Asha");

@@ -32,7 +32,7 @@ Story: #2
   - paths: apps/web/src/components/delete-dialog/**, e2e/delete/**
   - tests: Playwright for AC3.1, AC3.2, AC3.3, AC3.4, AC3.5
   - deps: T7
-- [ ] T9: cross-cutting end-to-end checks: persistence, isolation, responsive and keyboard
+- [x] T9: cross-cutting end-to-end checks: persistence, isolation, responsive and keyboard
   - paths: e2e/journeys/**
   - tests: Playwright for AC5.1, AC5.2 (Asha and Ben), AC7.1 (390 and 1280 px), AC7.2 (keyboard-only run and tab order)
   - deps: T8

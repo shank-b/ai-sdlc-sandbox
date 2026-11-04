@@ -1,13 +1,8 @@
-import { expect, test, type Page } from "@playwright/test";
-import { signInAs } from "../support/session";
+import { expect, test } from "@playwright/test";
+import { addItem as add, signInAs } from "../support/session";
 
 // The database is shared across the run and this file's tests run serially, so tests assert only on
 // the items they create (AC1.6 empties Ben's list first).
-const add = async (page: Page, title: string) => {
-  await page.getByLabel("New to-do").fill(title);
-  await page.getByRole("button", { name: "Add", exact: true }).click();
-  await expect(page.getByText(title, { exact: true })).toBeVisible();
-};
 
 test("AC1.1 / AC1.8: adding shows the item in Open and clears the field; Enter submits", async ({ page }) => {
   await signInAs(page, "Asha");
