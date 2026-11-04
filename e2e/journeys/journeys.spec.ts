@@ -1,16 +1,11 @@
-import { expect, test, type Page } from "@playwright/test";
-import { signInAs } from "../support/session";
+import { expect, test } from "@playwright/test";
+import { addItem as add, signInAs } from "../support/session";
 
 // The database is shared across the run, so every item title carries a per-run suffix and tests
 // assert only on their own items.
 const run = Date.now().toString(36);
 const title = (name: string) => `${name} ${run}`;
 
-const add = async (page: Page, text: string) => {
-  await page.getByLabel("New to-do").fill(text);
-  await page.getByRole("button", { name: "Add", exact: true }).click();
-  await expect(page.getByText(text, { exact: true })).toBeVisible();
-};
 
 test("AC5.1: items persist across sign-out and sign-in, and in a fresh browser context", async ({ page, browser }) => {
   const [open, done] = [title("Persist open"), title("Persist done")];
@@ -77,13 +72,16 @@ for (const [name, width, height] of [["390 px", 390, 800], ["1280 px", 1280, 800
     // every control is inside the viewport horizontally
     for (const el of await page.getByRole("button").or(page.getByRole("checkbox")).or(page.getByLabel("New to-do")).all()) {
       const box = await el.boundingBox();
+      expect(box).not.toBeNull();
       if (!box) continue;
       expect(box.x).toBeGreaterThanOrEqual(0);
       expect(box.x + box.width).toBeLessThanOrEqual(width);
     }
     // the long title wraps instead of being cut off
     const row = page.getByRole("listitem").filter({ hasText: long });
-    const clipped = await row.first().evaluate((li) => li.scrollWidth > li.clientWidth);
+    const clipped = await row.first().evaluate((li) =>
+      [li, ...li.querySelectorAll("*")].some((el) => el.scrollWidth > el.clientWidth + 1),
+    );
     expect(clipped).toBe(false);
   });
 }
