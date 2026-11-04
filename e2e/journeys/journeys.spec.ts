@@ -66,7 +66,7 @@ for (const [name, width, height] of [["390 px", 390, 800], ["1280 px", 1280, 800
     await signInAs(page, "Asha");
     const long = `${name} ${run} ${"wordy ".repeat(20)}`.trim().slice(0, 140);
     await add(page, long);
-    await add(page, title("Short"));
+    await add(page, title(`Short ${name}`));
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(overflow).toBeLessThanOrEqual(0);
     // every control is inside the viewport horizontally
